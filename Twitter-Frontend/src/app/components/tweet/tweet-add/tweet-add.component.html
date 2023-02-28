@@ -1,0 +1,94 @@
+<div class="row">
+        <mat-card class="add-tweet-card">
+            <mat-card-title class="card-title">Creating a Tweet</mat-card-title>
+            <div class="form-group">
+                <form [formGroup]="tweetFormGroup">
+
+                        <div class="select-image">
+                            <label class="select-image-text" for="myfile">Select an Image:</label><br>
+                            <input formControlName="image" (change)="getFile($event)" type="file" id="myfile" name="myfile"><br>
+                        </div><br>
+                        
+                        <div class="mb-3 w-50">
+                            <textarea type="text" class="form-control-tweet" formControlName="text" maxlength="281" id="text" rows="4"
+                                placeholder="Enter your Tweet Text here."
+                                [ngClass]="{ 'is-invalid': submittedTweet && tweetForm['text'].errors}">
+                            </textarea>
+                            <div *ngIf="submittedTweet&& tweetForm['text'].errors" class="invalid-feedback">
+                                <div *ngIf="tweetForm['text'].errors['required']">Text is required.</div>
+                                <div *ngIf="tweetForm['text'].errors['minlength']">Text must be at least 5 characters long.</div>
+                                <div *ngIf="tweetForm['text'].errors['maxlength']">Title must not exceed 280 characters.</div>
+                            </div>
+                        </div>
+                    
+                </form>
+            </div>
+            <div *ngIf="isBusiness()">
+                <div class="form-check" (click)="check()">
+                    <input mdbCheckbox class="advertisement-checkbox" type="checkbox" id="isChecked"/>
+                    <label class="checkbox-label" for="flexCheckDefault">
+                    Is this an Advertisement?
+                    </label>
+                </div>
+
+                    <div *ngIf="isChecked">  
+                        <div class="form-group">
+                            <form [formGroup]="advertisementFormGroup">
+
+                                <div class="mb-6 w-25">
+                                    <mat-card-title class="card-title-advertisement">Age From</mat-card-title>
+                                    <input type="number" class="form-control" formControlName="age_from"
+                                        [ngClass]="{ 'is-invalid': submittedAdvertisement && advertisementForm['age_from'].errors}">
+                                    <div *ngIf="submittedAdvertisement && advertisementForm['age_from'].errors" class="invalid-feedback">
+                                        <div *ngIf="advertisementForm['age_from'].errors['required']">Age is required.</div>
+                                        <div *ngIf="advertisementForm['age_from'].errors['min']">Minimum age is 18.</div>
+                                        <div *ngIf="advertisementForm['age_from'].errors['max']">Maximum age is 100.</div>
+                                    </div> 
+                                </div>
+
+                                
+                                <div class="mb-6 w-25">
+                                    <mat-card-title class="card-title-advertisement">Age To</mat-card-title>
+                                    <input type="number" class="form-control" formControlName="age_to"
+                                        [ngClass]="{ 'is-invalid': submittedAdvertisement && advertisementForm['age_from'].errors}">
+                                    <div *ngIf="submittedAdvertisement && advertisementForm['age_to'].errors" class="invalid-feedback">
+                                        <div *ngIf="advertisementForm['age_to'].errors['required']">Age is required.</div>
+                                        <div *ngIf="advertisementForm['age_to'].errors['min']">Minimum age is 18.</div>
+                                        <div *ngIf="advertisementForm['age_to'].errors['max']">Maximum age is 100.</div>
+                                    </div> 
+                                </div>
+
+                                <div class="mb-6 w-50">
+                                    <mat-card-title class="card-title-advertisement">Residence</mat-card-title>
+                                    <input type="text" maxlength="36" class="form-control" formControlName="residence"
+                                        [ngClass]="{ 'is-invalid': submittedAdvertisement && advertisementForm['residence'].errors}">
+                                    <div *ngIf="submittedAdvertisement && advertisementForm['residence'].errors" class="invalid-feedback">
+                                        <div *ngIf="advertisementForm['residence'].errors['required']">Residence is required.</div>
+                                        <div *ngIf="advertisementForm['residence'].errors['minlength']">Residence must be at least 3 characters long.</div>
+                                        <div *ngIf="advertisementForm['residence'].errors['maxlength']">Residence must not exceed 35 characters.</div>
+                                        <div *ngIf="advertisementForm['residence'].errors['pattern']">Special Characters are not allowed.</div>
+                                    </div> 
+                                </div>
+
+                                <div class="mb-6 w-25">
+                                    <mat-card-title class="card-title-advertisement">Gender</mat-card-title>
+                                    <select class="form-control" formControlName="gender" id="gender"
+                                        [ngClass]="{ 'is-invalid': submittedAdvertisement && advertisementForm['gender'].errors}">
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Both">Both</option>
+                                    </select>
+                                    <div *ngIf="submittedAdvertisement && advertisementForm['gender'].errors" class="invalid-feedback">
+                                        <div *ngIf="advertisementForm['gender'].errors['required']">Gender is required.</div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>  
+            </div>
+            <div class="form-group form-check">
+                <button type="submit" class="btn btn-primary" (click)="onSubmit()">Tweet</button>
+            </div>
+        </mat-card>
+</div>

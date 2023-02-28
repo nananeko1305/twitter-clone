@@ -1,0 +1,47 @@
+<div>
+  <mat-card class="tweet-card">
+    <div *ngIf="(tweet.owner_username != '' && tweet.username != tweet.owner_username) || tweet.owner_username == loggedInUser.username">
+      <mat-card-subtitle class="tweet-text" [routerLink]="['/View-Profile', tweet.username]">Retweeted by {{tweet.username}}</mat-card-subtitle>
+      <mat-card-title class="tweet-user-username" [routerLink]="['/View-Profile', tweet.owner_username]">{{tweet.owner_username}}</mat-card-title>
+    </div>
+    <mat-card-title class="tweet-username-icon" *ngIf="tweet.owner_username == ''">
+      <mat-card-title *ngIf="isAnAd()" class="tweet-is-advertisement">This is an Advertisement</mat-card-title>
+      <mat-card-title *ngIf="this.isThatMeLoggedIn" class="tweet-user-username" [routerLink]="['/My-Profile']"> {{tweet.username}}</mat-card-title>
+      <mat-card-title *ngIf="!this.isThatMeLoggedIn" class="tweet-user-username" [routerLink]="['/View-Profile', tweet.username]">{{tweet.username}}</mat-card-title>
+    </mat-card-title>
+    <!-- <mat-card-title class="tweet-username-icon">
+      <mat-card-title *ngIf="isAnAd()" class="tweet-is-advertisement">This is an Advertisement</mat-card-title>
+      <mat-card-title *ngIf="this.isThatMeLoggedIn" class="tweet-user-username" [routerLink]="['/My-Profile']">{{tweet.username}}</mat-card-title>
+      <mat-card-title *ngIf="!this.isThatMeLoggedIn" class="tweet-user-username" [routerLink]="['/View-Profile', tweet.username]">{{tweet.username}}</mat-card-title>
+    </mat-card-title> -->
+    <div *ngIf="tweet.owner_username == '' || this.isFollowingOwner || this.isThatMeLoggedIn">
+      <mat-card-subtitle class="tweet-text" [routerLink]="['/View-Tweet', tweet.id]">{{tweet.text}}</mat-card-subtitle>
+      <img class="tweet-image" mat-card-image alt="twitter-logo-item" *ngIf="this.tweet.image" [src]="imagePath" [routerLink]="['/View-Tweet', tweet.id]">
+    </div>
+    <div *ngIf="tweet.owner_username != '' && !this.isFollowingOwner && !this.isThatMeLoggedIn">
+      <mat-card-subtitle class="tweet-text">This profile is private, content hide. Follow {{tweet.owner_username}} to get this post view.</mat-card-subtitle>
+    </div>
+
+    <mat-card-actions *ngIf="tweet.owner_username == '' || this.isFollowingOwner || loggedInUser.username == tweet.owner_username">
+      <button *ngIf="isLiked" (click)="likeTweet(tweet)" mat-icon-button color="warn">
+        <mat-icon class="favorite-icon">favorite</mat-icon>
+      </button>
+
+      <button *ngIf="!isLiked" (click)="likeTweet(tweet)" mat-icon-button color="warn">
+        <mat-icon class="favorite-icon">favorite_border</mat-icon>
+      </button>
+
+      <b class="total-likes">{{tweet.favorite_count}}</b>
+      <button mat-icon-button color="warn" class="who-liked" (click)="openDialog()">Likes</button>
+
+      <button *ngIf="isRetweeted && !tweet.advertisement" (click)="retweet(tweet)" mat-icon-button>
+        <mat-icon class="star-icon">star</mat-icon>
+      </button>
+
+      <button *ngIf="(!isRetweeted && !tweet.advertisement) && tweet.owner_username == '' " (click)="retweet(tweet)" mat-icon-button>
+        <mat-icon class="star-icon">star_border</mat-icon>
+      </button>
+    </mat-card-actions>
+
+</mat-card>
+</div>

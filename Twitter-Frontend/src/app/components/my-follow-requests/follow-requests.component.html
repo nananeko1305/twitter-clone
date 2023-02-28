@@ -1,0 +1,11 @@
+<div>
+    <h1 class="pending-requests">Pending Follow Requests</h1>
+    <mat-card class="request-card" *ngFor="let followRequest of requests">
+        <mat-card-title>{{followRequest.requester}} wishes to follow you</mat-card-title>
+        <mat-card-subtitle>Request is Pending</mat-card-subtitle>
+        <mat-card-actions>
+            <button class="btn btn-success" (click)="AcceptRequest(followRequest.id)">Accept</button>
+            <button class="btn btn-danger" (click)="DeclineRequest(followRequest.id)">Deny</button>
+        </mat-card-actions>
+    </mat-card>
+</div>

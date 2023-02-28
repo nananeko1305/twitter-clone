@@ -1,0 +1,27 @@
+<mat-card class="my-profile-card">
+    <mat-card-title class="username">{{user.username}}</mat-card-title>
+    <h2 class="first-name" *ngIf="user.userType == 'Regular'"><b>First Name: </b>{{user.firstName}}</h2>
+    <h2 class="last-name" *ngIf="user.userType == 'Regular'"><b>Last Name: </b>{{user.lastName}}</h2>
+    <h2 class="first-name" *ngIf="user.userType == 'Business'"><b>Company Name: </b>{{user.companyName}}</h2>
+    <h2 class="last-name" *ngIf="user.userType == 'Business'"><b>Website: </b>{{user.website}}</h2>
+    <h2 class="residence" *ngIf="user.userType == 'Regular'"><b>Residence: </b>{{user.residence}}</h2>
+    <mat-card-actions class="user-profile-options-card">
+        <div>
+            <button *ngIf="(user.privacy && !isFollowing) || !isFollowing" class="btn btn-primary" (click)="SendRequest(user)">Follow</button>
+            <div class="follow">
+                <Label (click)="openDialogFollowers()">Followers: <b>{{this.followers.length}}</b></Label>
+                <Label (click)="openDialogFollowings()">Followings: <b>{{this.followings.length}}</b></Label>
+            </div>
+        </div>
+    </mat-card-actions>
+</mat-card>
+<div *ngIf="user.privacy && !isFollowing"> 
+    <!-- treba i provera da li ga pratimo ili ne -->
+    <h1 class="private-text">You cannot see this Users Tweets because their profile is <b>Private</b></h1>
+</div>
+
+<div *ngIf="(user.privacy && isFollowing) || !user.privacy">
+    <!-- treba i provera da li ga pratimo ili ne -->
+    <h1 class="user-posts-text">User Tweets</h1>
+    <app-tweet-list *ngIf="tweets.length > 0" [tweets]="tweets"></app-tweet-list>
+</div>

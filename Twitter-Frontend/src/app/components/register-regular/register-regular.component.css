@@ -1,0 +1,65 @@
+.mb-3 {
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 10px;
+}
+
+.twitter-logo {
+    margin-top: 100px;
+    margin-bottom: 10px;
+    height: 450px;
+    width: 450px;
+}
+
+.register-business {
+    margin-bottom: 30px;
+}
+
+.click-here {
+    text-align: center;
+    font-size: 40px;
+    color: blue;
+    cursor: pointer;
+}
+
+
+.add-user-card {
+    width: 550px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.card-title {
+    text-align: center;
+    font-size: 18px;
+}
+
+.register-title {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 30px;
+    color: blue;
+}
+
+.card-title-name {
+    text-align: center;
+    font-size: 25px;
+    color: blue;
+}
+
+.btn-primary {
+    margin-top: 20px;
+    text-align: center;
+    margin-left: 70px;
+}
+
+.captcha-field {
+    margin-top: 20px;
+    margin-left: 105px;
+}
+
+.captcha-text {
+    margin-left: 20px;
+}

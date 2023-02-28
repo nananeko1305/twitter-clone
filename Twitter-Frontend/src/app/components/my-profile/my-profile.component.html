@@ -1,0 +1,28 @@
+<mat-card class="my-profile-card">
+    <mat-card-title class="username">{{user.username}}</mat-card-title>
+    <h2 class="first-name" *ngIf="user.userType == 'Regular'"><b>First Name: </b>{{user.firstName}}</h2>
+    <h2 class="last-name" *ngIf="user.userType == 'Regular'"><b>Last Name: </b>{{user.lastName}}</h2>
+    <h2 class="first-name" *ngIf="user.userType == 'Business'"><b>Company Name: </b>{{user.companyName}}</h2>
+    <h2 class="last-name" *ngIf="user.userType == 'Business'"><b>Website: </b>{{user.website}}</h2>
+    <h2 class="email"><b>Email: </b>{{user.email}}</h2>
+    <h2 class="role"><b>Role: </b>{{user.userType}}</h2>
+    <mat-card-actions class="my-profile-options-card">
+        <div>
+            <button class="btn btn-danger" (click)="updatePassword()">Change Password</button>
+        </div>
+        <div class="toggle" *ngIf="user.userType != 'Business'">
+            <b class="public-text">Public</b>
+            <label class="switch" >
+                <input type="checkbox" (click)="UpdateVisibility()" [checked]="user.privacy">
+                <span class="slider round"></span>
+            </label>
+            <b class="private-text">Private</b>
+            <div class="follow">
+                <Label (click)="openDialogFollowers()">Followers: <b>{{this.followers.length}}</b></Label>
+                <Label (click)="openDialogFollowings()">Following: <b>{{this.followings.length}}</b></Label>
+            </div>
+        </div>
+    </mat-card-actions>
+</mat-card>
+<h1 class="your-posts-text">Your Tweets</h1>
+<app-tweet-list *ngIf="tweets.length > 0" [tweets]="tweets"></app-tweet-list>

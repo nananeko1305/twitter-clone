@@ -1,0 +1,27 @@
+.verify-acc-title{
+    font-size: 20px;
+    padding:10px;
+}
+
+.card-title{
+    font-size: 17px;
+}
+
+.verify-acc-card{
+    width: 40% !important;
+    margin: auto !important;
+    margin-top: 40px !important;
+    text-align: center !important;
+}
+
+.btn{
+    width: 40% !important;
+}
+
+
+.invalid-token{
+    margin: 20px 0px;
+    font-size: 15px;
+    color: red;
+    text-align: center;
+}

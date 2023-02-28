@@ -1,0 +1,94 @@
+.my-profile-card {
+  width: 800px;
+  height: 340px;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+  
+.user-profile-options-card {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.username {
+  text-align: center;
+  font-size: 35px;
+  margin-top: 25px;
+  margin-bottom: 25px;
+  color: blue;
+}
+
+.first-name {
+  text-align: center;
+  font-size: 20px;
+  margin-top: 35px;
+  margin-bottom: 10px;
+}
+
+.last-name {
+  text-align: center;
+  font-size: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.residence {
+  text-align: center;
+  font-size: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.gender {
+  text-align: center;
+  font-size: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.age {
+  text-align: center;
+  font-size: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.btn-primary {
+  text-align: center;
+}
+
+.public-text {
+  margin-right: 5px;
+}
+
+.private-text {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.user-posts-text {
+  font-size: 40px;
+  margin-top: 30px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.follow {
+  text-align: center;
+}
+
+.follow label {
+  margin: 2%;
+  padding: 2%;
+  border-radius: 8%;
+}
+
+.follow label:hover {
+  margin: 2%;
+  padding: 2%;
+  background-color: blue;
+  border-radius: 8%;
+  color: white;
+}

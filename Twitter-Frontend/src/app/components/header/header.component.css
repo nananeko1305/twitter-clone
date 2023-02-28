@@ -1,0 +1,21 @@
+:host {
+  position: relative;
+  z-index: 10;
+  color: #fff;
+}
+  
+.app-navbar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  color: white
+}
+
+.app-navbar span {
+  text-transform: uppercase !important;
+}
+
+.right {
+  margin-left: auto;
+  float: right;
+}

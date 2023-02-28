@@ -1,0 +1,54 @@
+.tweet-card {
+  max-width: 530px;
+  margin-top: 50px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tweet-user-username {
+  font-size: 22px;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  color: blue;
+  cursor: pointer;
+  display: inline;
+}
+
+.tweet-text {
+  margin-top: 20px;
+  font-size: 19px;
+  margin-left: 10px;
+  color:black;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.tweet-image {
+  cursor: pointer;
+}
+  
+.favorite-icon {
+  transform: scale(1.5);
+}
+
+.star-icon {
+  transform: scale(1.5);
+  color: gold;
+}
+
+.total-likes {
+  margin-left: 10px;
+}
+
+.who-liked {
+  font-size: 15px;
+  margin-left: 10px;
+}
+
+.tweet-is-advertisement {
+  font-size: 16px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  color: green;
+}

@@ -1,0 +1,12 @@
+p, Regular, /, POST
+p, Regular, /*, GET
+p, Regular, /getMe/*, GET
+p, Regular, /visibility, PUT
+p, Business, /, POST
+p, Business, /*, GET
+p, Business, /getMe/*, GET
+p, Business, /visibility, PUT
+p, NotLoggedIn, /*, POST
+p, NotLoggedIn, /mailExist/*, GET
+p, NotLoggedIn, /*, GET
+

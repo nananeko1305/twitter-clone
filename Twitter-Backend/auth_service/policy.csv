@@ -1,0 +1,11 @@
+p, NotLoggedIn, /login, POST
+p, NotLoggedIn, /register, POST
+p, Regular, /changePassword, POST
+p, Business, /changePassword, POST
+p, NotLoggedIn, /verifyAccount, POST
+p, NotLoggedIn, /verifyAccount, POST
+p, NotLoggedIn, /resendVerify, POST
+p, NotLoggedIn, /recoverPasswordToken, POST
+p, NotLoggedIn, /checkRecoverToken, POST
+p, NotLoggedIn, /recoverPassword, POST
+

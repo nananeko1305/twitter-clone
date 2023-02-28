@@ -1,0 +1,44 @@
+<div>
+    <mat-card class="main-page-card">
+        <mat-card-title class="main-page-card-title">Welcome to Twitter</mat-card-title>
+        <mat-card-subtitle class="main-page-card-subtitle">Browse through your Feed</mat-card-subtitle>
+    </mat-card>
+    <ng-container *ngIf="dataLoaded" >
+        <h2 style="text-align: center; margin-top: 15px;">Recommended advertisements</h2>
+        <mat-carousel
+        timings="250ms ease-in"
+        [autoplay]="true"
+        [interval]="3000"
+        color="accent"
+        maxWidth="auto"
+        [loop]="true"
+        [hideArrows]="false"
+        [hideIndicators]="false"
+        [useKeyboard]="true"
+        [useMouseWheel]="false"
+        orientation="ltr" 
+        slideHeight="650px"
+        [maintainAspectRatio]="false">
+            <mat-carousel-slide  *ngFor="let ad of ads" overlayColor="#ffffff">
+                <div class="slide-height-fix">
+                    <app-tweet-item [tweet]="ad" ></app-tweet-item>
+                </div>  
+            </mat-carousel-slide>
+        </mat-carousel>
+      </ng-container>
+    
+</div>
+
+<div class="row">
+    <div class="col-7 col-lg-8">
+        <app-tweet-list *ngIf="tweets.length > 0" [tweets]="tweets"></app-tweet-list>
+    </div>
+    <div class="col-5 col-lg-4">
+        <mat-card class="people-suggestions-card">
+            <mat-card-title class="people-suggestions-title">People you may know</mat-card-title>
+            <mat-card-content *ngFor="let name of recommendations">
+                <mat-card-header class="people-suggestions-header" (click)="OpenProfile(name)"  style="cursor: pointer;">{{name}}</mat-card-header>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>

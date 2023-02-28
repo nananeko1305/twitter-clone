@@ -1,0 +1,17 @@
+.request-card {
+    width: 450px;
+    height: 150px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 15px;
+    margin-bottom: 30px;
+}
+
+.btn-success {
+    margin-right: 70px;
+}
+
+.btn-danger {
+    margin-left: 70px;
+}

@@ -1,0 +1,66 @@
+.tweet-card {
+  max-width: 530px;
+  margin-top: 50px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+}
+  
+.tweet-user-username {
+  font-size: 22px;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  color: blue;
+  cursor: pointer;
+}
+
+.tweet-text {
+  font-size: 19px;
+  margin-left: 10px;
+  color:black;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.tweet-image {
+  cursor: pointer;
+}
+  
+.favorite-icon {
+  transform: scale(1.5);
+}
+
+.star-icon {
+  transform: scale(1.5);
+  margin-left: 370px;
+  color: gold;
+}
+
+.total-likes {
+  margin-left: 10px;
+}
+  
+.who-liked {
+  font-size: 15px;
+  margin-left: 10px;
+}
+
+.tweet-is-advertisement {
+  font-size: 16px;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  color: green;
+}
+
+.report {
+  max-width: 530px;
+  margin-top: 50px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.report-title {
+  text-align: center;
+  margin-top: 15px;
+}

@@ -1,0 +1,64 @@
+.add-tweet-card {
+    width: 800px;
+    margin-top: 30px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.card-title {
+    text-align: center;
+    font-size: 35px;
+}
+
+.select-image {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.select-image-text {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.mb-3 {
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 20px;
+    resize: none;
+}
+
+.mb-6 {
+    margin-left: 190px;
+}
+
+.btn-primary {
+    margin-top: 10px;
+    float: right;
+}
+
+.form-control-tweet {
+    width: 430px;
+    height: 220px;
+    resize: none;
+}
+
+.age-field {
+    width: 200px;
+    height: 30px;
+}
+
+.card-title-advertisement {
+    text-align: left;
+    font-size: 20px;
+    margin-top: 15px;
+}
+
+.advertisement-checkbox {
+    margin-left: 275px;
+    color: blue;
+}
+
+.checkbox-label {
+    font-size: 17px;
+    margin-left: 10px;
+}

@@ -1,0 +1,145 @@
+<div class="row">
+    <div class="col-7 col-lg-8">
+        <mat-card class="add-user-card">
+            <mat-card-title class="register-title">Register as a Regular User</mat-card-title>
+            <div class="form-group">
+                <form [formGroup]="formGroup">
+
+                    <div class="row">
+
+                        <div class="mb-3 w-50">
+                            <mat-card-title class="card-title">First Name</mat-card-title>
+                            <input type="text" maxlength="21" class="form-control" formControlName="firstName"
+                                [ngClass]="{ 'is-invalid': submitted && registerForm['firstName'].errors }">
+                            <div *ngIf="submitted && registerForm['firstName'].errors" class="invalid-feedback">
+                                <div *ngIf="registerForm['firstName'].errors['required']">First Name is required.</div>
+                                <div *ngIf="registerForm['firstName'].errors['minlength']">First Name must be at least 3 characters long.</div>
+                                <div *ngIf="registerForm['firstName'].errors['maxlength']">First Name must not exceed 20 characters.</div>
+                                <div *ngIf="registerForm['firstName'].errors['pattern']">Numbers and Special Characters are not allowed.</div>
+                            </div>    
+                        </div>
+
+                        <div class="mb-3 w-50">
+                            <mat-card-title class="card-title">Last Name</mat-card-title>
+                            <input type="text" maxlength="21" class="form-control" formControlName="lastName"
+                                [ngClass]="{ 'is-invalid': submitted && registerForm['lastName'].errors}">
+                            <div *ngIf="submitted && registerForm['lastName'].errors" class="invalid-feedback">
+                                <div *ngIf="registerForm['lastName'].errors['required']">Last Name is required.</div>
+                                <div *ngIf="registerForm['lastName'].errors['minlength']">Last Name must be at least 3 characters long.</div>
+                                <div *ngIf="registerForm['lastName'].errors['maxlength']">Last Name must not exceed 20 characters.</div>
+                                <div *ngIf="registerForm['lastName'].errors['pattern']">Numbers and Special Characters are not allowed.</div>
+                            </div> 
+                        </div>
+
+                    </div>
+                    
+                    <div class="row">
+
+                        <div class="mb-3 w-25">
+                            <mat-card-title class="card-title">Gender</mat-card-title>
+                            <select class="form-control" formControlName="gender" id="gender"
+                                [ngClass]="{ 'is-invalid': submitted && registerForm['gender'].errors}">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                            </select>
+                            <div *ngIf="submitted && registerForm['gender'].errors" class="invalid-feedback">
+                                <div *ngIf="registerForm['gender'].errors['required']">Gender is required.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 w-25">
+                            <mat-card-title class="card-title">Age</mat-card-title>
+                            <input type="number" class="form-control" formControlName="age"
+                                [ngClass]="{ 'is-invalid': submitted && registerForm['age'].errors}">
+                            <div *ngIf="submitted && registerForm['age'].errors" class="invalid-feedback">
+                                <div *ngIf="registerForm['age'].errors['required']">Age is required.</div>
+                                <div *ngIf="registerForm['age'].errors['min']">Minimum age is 1.</div>
+                                <div *ngIf="registerForm['age'].errors['max']">Maximum age is 100.</div>
+                            </div> 
+                        </div>
+
+                    </div>
+
+                    <div class="mb-3 w-50">
+                        <mat-card-title class="card-title">Residence</mat-card-title>
+                        <input type="text" maxlength="36" class="form-control" formControlName="residence"
+                            [ngClass]="{ 'is-invalid': submitted && registerForm['residence'].errors}">
+                        <div *ngIf="submitted && registerForm['residence'].errors" class="invalid-feedback">
+                            <div *ngIf="registerForm['residence'].errors['required']">Residence is required.</div>
+                            <div *ngIf="registerForm['residence'].errors['minlength']">Residence must be at least 3 characters long.</div>
+                            <div *ngIf="registerForm['residence'].errors['maxlength']">Residence must not exceed 35 characters.</div>
+                            <div *ngIf="registerForm['residence'].errors['pattern']">Special Characters are not allowed.</div>
+                        </div> 
+                    </div>
+
+                    <div class="mb-3 w-50">
+                        <mat-card-title class="card-title">Email</mat-card-title>
+                        <input type="text" maxlength="36" class="form-control" formControlName="email"
+                            [ngClass]="{ 'is-invalid': submitted && registerForm['email'].errors }">
+                        <div *ngIf="submitted && registerForm['email'].errors" class="invalid-feedback">
+                            <div *ngIf="registerForm['email'].errors['required']">Email is required.</div>
+                            <div *ngIf="registerForm['email'].errors['minlength']">Email must be at least 3 characters long.</div>
+                            <div *ngIf="registerForm['email'].errors['maxlength']">Email must not exceed 35 characters.</div>
+                            <div *ngIf="registerForm['email'].errors['email']">Email is not in the correct format.</div>
+                        </div>    
+                    </div>
+
+                    <div class="mb-3 w-50">
+                        <mat-card-title class="card-title">Username</mat-card-title>
+                        <input type="text" maxlength="31" class="form-control" formControlName="username"
+                            [ngClass]="{ 'is-invalid': submitted && registerForm['username'].errors}">
+                        <div *ngIf="submitted && registerForm['username'].errors" class="invalid-feedback">
+                            <div *ngIf="registerForm['username'].errors['required']">Username is required.</div>
+                            <div *ngIf="registerForm['username'].errors['minlength']">Username must be at least 3 characters long.</div>
+                            <div *ngIf="registerForm['username'].errors['maxlength']">Username must not exceed 30 characters.</div>
+                            <div *ngIf="registerForm['username'].errors['pattern']">Special Characters are not allowed.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 w-50">
+                        <mat-card-title class="card-title">Password</mat-card-title>
+                        <input type="password" maxlength="31" class="form-control" formControlName="password"
+                            [ngClass]="{ 'is-invalid': submitted && registerForm['password'].errors}">
+                        <div *ngIf="submitted && registerForm['password'].errors" class="invalid-feedback">
+                            <div *ngIf="registerForm['password'].errors['required']">Password is required.</div>
+                            <div *ngIf="registerForm['password'].errors['minlength']">Password must be at least 10 characters long.</div>
+                            <div *ngIf="registerForm['password'].errors['maxlength']">Password must not exceed 30 characters.</div>
+                            <div *ngIf="registerForm['password'].errors['passwordStrength']">Your password must have lower case, upper case and numeric characters.</div>
+                            <div *ngIf="registerForm['password'].errors['pattern']">Special Characters are not allowed.</div>
+                        </div>
+                        
+                        <div class="form-group form-check">
+                            <button [disabled]="!aFormGroup.valid" type="submit" class="btn btn-primary" (click)="onSubmit()">Register</button>
+                        </div>
+                    </div>
+
+                    <div class="captcha-field">
+                            <div *ngIf="!aFormGroup.valid">
+                                <h1 class="captcha-text">
+                                    Please confirm Captcha.
+                                </h1>
+                            </div>
+                        <form [formGroup]="aFormGroup">
+                            <ngx-recaptcha2 
+                                #captchaElem
+                                [siteKey]="siteKey"
+                                formControlName="recaptcha">
+                            </ngx-recaptcha2>
+                        </form>
+                    </div>
+
+                </form>
+
+            </div>
+        </mat-card>
+    </div>
+
+    <div class="col-5 col-lg-4">
+            <img class="twitter-logo" alt="twitter-logo-regular" src="https://cdn-icons-png.flaticon.com/512/124/124021.png">
+            <div>
+                <mat-card-title class="register-business">If you want to Register as a <b>Business User</b></mat-card-title>
+                <mat-card-title class="click-here" [routerLink]="['/Register-Business']">Click Here</mat-card-title>
+            </div>
+    </div>
+
+</div>

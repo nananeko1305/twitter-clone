@@ -1,0 +1,27 @@
+<mat-toolbar class="app-navbar" color="primary">
+    <div class="right">
+        <div>
+            <button *ngIf="isLoggedIn()" aria-pressed="true" mat-button mat-ripple routerLink="/New-Tweet">
+                <span>Tweet</span>
+            </button>
+            <button *ngIf="isLoggedIn()" aria-pressed="true" mat-button mat-ripple routerLink="/Main-Page">
+                <span>Feed</span>
+            </button>
+            <button *ngIf="!isLoggedIn()" aria-pressed="true" mat-button mat-ripple routerLink="/Register-Regular">
+                <span>Register</span>
+            </button>
+            <button *ngIf="!isLoggedIn()" aria-pressed="true" mat-button mat-ripple routerLink="/Login">
+                <span>Login</span>
+            </button>
+            <button *ngIf="isLoggedIn()" aria-pressed="true" mat-button mat-ripple routerLink="/Follow-Requests">
+                <span>Follow Requests</span>
+            </button>
+            <button *ngIf="isLoggedIn()" aria-pressed="true" mat-button mat-ripple routerLink="/My-Profile">
+                <span>My Profile</span>
+            </button>
+            <button *ngIf="isLoggedIn()" aria-pressed="true" (click)="logout()" mat-button mat-ripple>
+                <span>Logout</span>
+            </button>
+        </div>
+    </div>
+</mat-toolbar>

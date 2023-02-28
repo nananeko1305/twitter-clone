@@ -1,0 +1,27 @@
+.status-code {
+    color: red;
+    font-size: 300px;
+    text-align: center;
+    margin-top: 200px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.not-found-text {
+    color: gray;
+    font-size: 80px;
+    text-align: center;
+    margin-top: 180px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.return-button {
+    text-align: center;
+    margin-top: 100px;
+}
+
+.btn-primary {
+    font-size: 30px;
+}
+

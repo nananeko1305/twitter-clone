@@ -1,0 +1,7 @@
+<h1 mat-dialog-title class="dialog-title">Users who liked this post:</h1>
+<div mat-dialog-content class="dialog-content">
+    <h3 *ngFor="let favorite of data" (click)="onUsernameClick(favorite.username)" class="dialog-username">{{favorite.username}}</h3>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onOkClick()">Ok</button>
+</div>

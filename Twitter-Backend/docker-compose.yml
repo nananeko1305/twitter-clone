@@ -1,0 +1,348 @@
+version: '3.8'
+
+services:
+
+  tweet_service:
+    image: tweet_service
+    container_name: tweet_service
+    build:
+      context: .
+      dockerfile: ./tweet_service/Dockerfile
+    restart: always
+    ports:
+      - ${TWEET_SERVICE_PORT}:${TWEET_SERVICE_PORT}
+    environment:
+      TWEET_DB: ${TWEET_DB}
+      TWEET_SERVICE_PORT: ${TWEET_SERVICE_PORT}
+      FOLLOW_SERVICE_HOST: ${FOLLOW_SERVICE_HOST}
+      FOLLOW_SERVICE_PORT: ${FOLLOW_SERVICE_PORT}
+      SECRET_KEY: ${SECRET_KEY}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+      JAEGER_ADDRESS: ${JAEGER_ADDRESS}
+      TWEET_CACHE_HOST: ${TWEET_CACHE_HOST}
+      TWEET_CACHE_PORT: ${TWEET_CACHE_PORT}
+      CREATE_REPORT_COMMAND_SUBJECT: ${CREATE_REPORT_COMMAND_SUBJECT}
+      CREATE_REPORT_REPLY_SUBJECT: ${CREATE_REPORT_REPLY_SUBJECT}
+    depends_on:
+      jaeger:
+        condition: service_started
+      tweet_db:
+        condition: service_healthy
+      redis_db:
+        condition: service_started
+      nats:
+        condition: service_started
+    networks:
+      - network
+    volumes:
+      - ./tweet_service/logs:/app/logs
+
+  user_service:
+    image: user_service
+    container_name: user_service
+    build:
+      context: .
+      dockerfile: ./user_service/Dockerfile
+    restart: always
+    ports:
+      - ${USER_SERVICE_PORT}:${USER_SERVICE_PORT}
+    environment:
+      USER_DB_HOST: ${USER_DB_HOST}
+      USER_DB_PORT: ${USER_DB_PORT}
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+      SECRET_KEY: ${SECRET_KEY}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+      CREATE_USER_COMMAND_SUBJECT: ${CREATE_USER_COMMAND_SUBJECT}
+      CREATE_USER_REPLY_SUBJECT: ${CREATE_USER_REPLY_SUBJECT}
+      JAEGER_ADDRESS: ${JAEGER_ADDRESS}
+    depends_on:
+      - user_db
+      - jaeger
+      - auth_service
+    networks:
+      - network
+    volumes:
+      - ./user_service/logs:/app/logs
+
+  auth_service:
+    image: auth_service
+    container_name: auth_service
+    build:
+      context: .
+      dockerfile: ./auth_service/Dockerfile
+    restart: always
+    ports:
+      - ${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}
+    environment:
+      AUTH_DB_HOST: ${AUTH_DB_HOST}
+      AUTH_DB_PORT: ${AUTH_DB_PORT}
+      AUTH_CACHE_HOST: ${AUTH_CACHE_HOST}
+      AUTH_CACHE_PORT: ${AUTH_CACHE_PORT}
+      AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT}
+      SECRET_KEY: ${SECRET_KEY}
+      USER_SERVICE_HOST: ${USER_SERVICE_HOST}
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+      SMTP_AUTH_MAIL: ${SMTP_AUTH_MAIL}
+      SMTP_AUTH_PASSWORD: ${SMTP_AUTH_PASSWORD}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+      CREATE_USER_COMMAND_SUBJECT: ${CREATE_USER_COMMAND_SUBJECT}
+      CREATE_USER_REPLY_SUBJECT: ${CREATE_USER_REPLY_SUBJECT}
+      JAEGER_ADDRESS: ${JAEGER_ADDRESS}
+    depends_on:
+      - auth_db
+      - auth_cache
+      - jaeger
+      - nats
+    networks:
+      - network
+    volumes:
+      - ./auth_service/logs:/app/logs
+
+  follow_service:
+    image: follow_service
+    container_name: follow_service
+    build:
+      context: .
+      dockerfile: ./follow_service/Dockerfile
+    restart: always
+    ports:
+      - ${FOLLOW_SERVICE_PORT}:${FOLLOW_SERVICE_PORT}
+    environment:
+      FOLLOW_DB_HOST: ${FOLLOW_DB_HOST}
+      FOLLOW_DB_PORT: ${FOLLOW_DB_PORT}
+      FOLLOW_DB_USER: ${FOLLOW_DB_USER}
+      FOLLOW_DB_PASS: ${FOLLOW_DB_PASS}
+      FOLLOW_SERVICE_PORT: ${FOLLOW_SERVICE_PORT}
+      SECRET_KEY: ${SECRET_KEY}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+      CREATE_USER_COMMAND_SUBJECT: ${CREATE_USER_COMMAND_SUBJECT}
+      CREATE_USER_REPLY_SUBJECT: ${CREATE_USER_REPLY_SUBJECT}
+    depends_on:
+      - follow_db
+      - jaeger
+      - auth_service
+      - user_service
+    networks:
+      - network
+    volumes:
+      - ./follow_service/logs:/app/logs
+
+  report_service:
+    image: report_service
+    container_name: report_service
+    build:
+      context: .
+      dockerfile: ./report_service/Dockerfile
+    restart: always
+    ports:
+      - ${REPORT_SERVICE_PORT}:${REPORT_SERVICE_PORT}
+    environment:
+      EVENT_DB: ${EVENT_DB}
+      REPORT_DB_HOST: ${REPORT_DB_HOST}
+      REPORT_DB_PORT: ${REPORT_DB_PORT}
+      REPORT_SERVICE_PORT: ${REPORT_SERVICE_PORT}
+      SECRET_KEY: ${SECRET_KEY}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+      CREATE_REPORT_COMMAND_SUBJECT: ${CREATE_REPORT_COMMAND_SUBJECT}
+      CREATE_REPORT_REPLY_SUBJECT: ${CREATE_REPORT_REPLY_SUBJECT}
+    depends_on:
+      report_db:
+        condition: service_started
+      nats:
+        condition: service_started
+      event_db:
+        condition: service_healthy
+    networks:
+      - network
+    volumes:
+      - ./report_service/logs:/app/logs
+
+  api_gateway:
+    build:
+      context: ./api_gateway/
+      dockerfile: Dockerfile
+    container_name: api_gateway
+    restart: on-failure
+    ports:
+      - "8000:8000"
+    depends_on:
+      - tweet_service
+      - auth_service
+      - user_service
+      - follow_service
+    networks:
+      - network
+
+  tweet_db:
+    image: cassandra
+    container_name: tweet_db
+    restart: always
+    ports:
+      - "9042:9042"
+    # Docker healthcheck - checks if database is "alive"
+    healthcheck:
+      test: [ "CMD-SHELL", "cqlsh -e 'describe cluster'" ]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    volumes:
+      - cassandra_store:/var/lib/cassandra/data
+    networks:
+      - network
+
+  event_db:
+    image: cassandra
+    container_name: event_db
+    restart: always
+    ports:
+      - "9043:9043"
+    environment:
+      - CASSANDRA_START_RPC=true
+      - CASSANDRA_NATIVE_TRANSPORT_PORT=9042
+    # Docker healthcheck - checks if database is "alive"
+    healthcheck:
+      test: [ "CMD-SHELL", "cqlsh -e 'describe cluster'" ]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    volumes:
+      - event_store:/var/lib/cassandra/data
+    networks:
+      - network
+
+  user_db:
+    image: mongo
+    container_name: user_db
+    restart: on-failure
+    networks:
+      - network
+    volumes:
+      - user_db:/data/db
+
+  auth_db:
+    image: mongo
+    container_name: auth_db
+    restart: on-failure
+    networks:
+      - network
+    volumes:
+      - auth_db:/data/db
+
+  report_db:
+    image: mongo
+    container_name: report_db
+    restart: on-failure
+    networks:
+      - network
+    volumes:
+      - report_db:/data/db
+
+  follow_db:
+    image: neo4j
+    restart: always
+    ports:
+      # bolt
+      - "7687:7687"
+      # http
+      - "7474:7474"
+      # https
+      - "7473:7473"
+    # Docker healtcheck - checks if database is "alive"
+    healthcheck:
+      # test: [ "CMD-SHELL", "echo RETURN 1 | cypher-shell -a <NEO4J_dbms_connector_bolt_listen__address> -u <user defined username> -p <user defined password> || exit 1" ]
+      test:
+        [
+          "CMD-SHELL",
+          "echo RETURN 1 | cypher-shell -a bolt://follow_db:7687 -u neo4j -p twitter123 || exit 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      - NEO4J_initial_dbms_default__database=follow
+      - NEO4J_AUTH=neo4j/twitter123
+    networks:
+      - network
+    volumes:
+      - neo4j_data:/data
+
+  auth_cache:
+    image: redis
+    restart: always
+    environment:
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL,CONFIG
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - ${AUTH_CACHE_PORT}:${AUTH_CACHE_PORT}
+    command: redis-server --save 20 1 --loglevel warning
+    networks:
+      - network
+    volumes:
+      - auth_cache:/data
+
+  redis_db:
+    image: redis
+    restart: always
+    environment:
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL,CONFIG
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - ${TWEET_CACHE_PORT}:${TWEET_CACHE_PORT}
+    command: --port 6380
+    volumes:
+      - redis_data:/data
+    networks:
+      - network
+
+  nats:
+    image: nats
+    container_name: nats
+    restart: on-failure
+    networks:
+      - network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+    networks:
+      - network
+
+  collector:
+    image: otel/opentelemetry-collector:latest
+    command: [ "--config=/etc/otel-collector-config.yaml" ]
+    volumes:
+      - ./api_gateway/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    networks:
+      - network
+
+volumes:
+  cassandra_store:
+  neo4j_data:
+  auth_cache:
+    driver: local
+  redis_data:
+  user_db:
+  auth_db:
+  report_db:
+  event_store:
+
+networks:
+  network:
+    driver: bridge

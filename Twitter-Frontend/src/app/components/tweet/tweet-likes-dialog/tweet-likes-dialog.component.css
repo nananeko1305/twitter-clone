@@ -1,0 +1,15 @@
+.dialog-title {
+    text-align: center;
+    font-size: 25px;
+    color: black;
+}
+
+.dialog-content {
+    text-align: center;
+}
+
+.dialog-username {
+    color: blue;
+    font-size: 18px;
+    cursor: pointer;
+}
