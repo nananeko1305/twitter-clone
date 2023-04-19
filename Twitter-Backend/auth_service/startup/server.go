@@ -21,6 +21,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 	"log"
+	"mux"
 	"net/http"
 	"os"
 	"os/signal"
