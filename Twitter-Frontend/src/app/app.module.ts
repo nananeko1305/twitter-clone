@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgxCaptchaModule } from 'ngx-captcha';
-import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { MatCardModule } from '@angular/material/card';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule} from '@angular/material/button';
@@ -45,7 +44,6 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { FollowComponentDialogComponent } from './components/follow-component-dialog/follow-component-dialog.component';
 import { FollowingComponentDialogComponent } from './components/following-component-dialog/following-component-dialog.component';
-import { MatCarouselModule } from 'ng-mat-carousel';
 
 
 @NgModule({
@@ -97,8 +95,6 @@ import { MatCarouselModule } from 'ng-mat-carousel';
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatMomentDateModule,
-    MatCarouselModule
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,
