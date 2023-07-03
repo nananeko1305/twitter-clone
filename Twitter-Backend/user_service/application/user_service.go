@@ -3,26 +3,25 @@ package application
 import (
 	"context"
 	"fmt"
-	"log"
-	"user_service/domain"
-	"user_service/errors"
-
 	"github.com/sirupsen/logrus"
 	"github.com/zjalicf/twitter-clone-common/common/saga/create_user"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.opentelemetry.io/otel/trace"
+	"log"
+	"user_service/domain"
+	"user_service/errors"
 )
 
 type UserService struct {
-	store  domain.UserStore
-	tracer trace.Tracer
+	store   domain.UserStore
+	tracer  trace.Tracer
 	logging *logrus.Logger
 }
 
 func NewUserService(store domain.UserStore, tracer trace.Tracer, logging *logrus.Logger) *UserService {
 	return &UserService{
-		store:  store,
-		tracer: tracer,
+		store:   store,
+		tracer:  tracer,
 		logging: logging,
 	}
 }
