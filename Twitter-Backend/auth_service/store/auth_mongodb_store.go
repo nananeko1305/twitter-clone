@@ -140,7 +140,7 @@ func (store *AuthMongoDBStore) filterOne(filter interface{}) (user *domain.Crede
 }
 
 func decode(cursor *mongo.Cursor) (users []*domain.Credentials, err error) {
-	cursor.Next(context.TODO()) {
+	for cursor.Next(context.TODO()) {
 		var user domain.Credentials
 		err = cursor.Decode(&user)
 		if err != nil {

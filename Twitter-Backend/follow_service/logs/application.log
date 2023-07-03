@@ -18203,3 +18203,4 @@ time="2023-02-03T08:18:26Z" level=info msg="FollowHandler.FollowExist : follow_e
 time="2023-02-03T14:53:48Z" level=info msg="follow_service : successful init of enforcer"
 time="2023-02-03T15:05:14Z" level=info msg="follow_service : successful init of enforcer"
 time="2023-02-03T23:18:46Z" level=info msg="follow_service : successful init of enforcer"
+time="2023-07-03T14:30:04Z" level=info msg="follow_service : successful init of enforcer"
