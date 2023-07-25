@@ -1,4 +1,4 @@
-version: '3.8'
+version: '2.4'
 
 services:
 
@@ -39,6 +39,7 @@ services:
       - network
     volumes:
       - ./tweet_service/logs:/app/logs
+    mem_limit: 128mb
 
   user_service:
     image: user_service
@@ -69,6 +70,7 @@ services:
       - network
     volumes:
       - ./user_service/logs:/app/logs
+    mem_limit: 128mb
 
   auth_service:
     image: auth_service
@@ -106,6 +108,7 @@ services:
       - network
     volumes:
       - ./auth_service/logs:/app/logs
+    mem_limit: 128mb
 
   follow_service:
     image: follow_service
@@ -138,6 +141,7 @@ services:
       - network
     volumes:
       - ./follow_service/logs:/app/logs
+    mem_limit: 128mb
 
   report_service:
     image: report_service
@@ -171,6 +175,7 @@ services:
       - network
     volumes:
       - ./report_service/logs:/app/logs
+    mem_limit: 128mb
 
   api_gateway:
     build:
@@ -187,11 +192,12 @@ services:
       - follow_service
     networks:
       - network
+    mem_limit: 128mb
 
   tweet_db:
     image: cassandra
     container_name: tweet_db
-    restart: always
+    restart: on-failure
     ports:
       - "9042:9042"
     # Docker healthcheck - checks if database is "alive"
@@ -204,11 +210,12 @@ services:
       - cassandra_store:/var/lib/cassandra/data
     networks:
       - network
+    mem_limit: 5gb
 
   event_db:
     image: cassandra
     container_name: event_db
-    restart: always
+    restart: on-failure
     ports:
       - "9043:9043"
     environment:
@@ -224,6 +231,8 @@ services:
       - event_store:/var/lib/cassandra/data
     networks:
       - network
+    mem_limit: 5gb
+
 
   user_db:
     image: mongo
@@ -233,24 +242,29 @@ services:
       - network
     volumes:
       - user_db:/data/db
+    mem_limit: 128mb
+
 
   auth_db:
     image: mongo
     container_name: auth_db
-    restart: on-failure
+    restart: always
     networks:
       - network
     volumes:
       - auth_db:/data/db
+    mem_limit: 128mb
 
   report_db:
     image: mongo
     container_name: report_db
-    restart: on-failure
+    restart: always
     networks:
       - network
     volumes:
       - report_db:/data/db
+    mem_limit: 128mb
+
 
   follow_db:
     image: neo4j
@@ -280,6 +294,7 @@ services:
       - network
     volumes:
       - neo4j_data:/data
+    mem_limit: 700mb
 
   auth_cache:
     image: redis
@@ -294,6 +309,7 @@ services:
       - network
     volumes:
       - auth_cache:/data
+    mem_limit: 128mb
 
   redis_db:
     image: redis
@@ -308,6 +324,7 @@ services:
       - redis_data:/data
     networks:
       - network
+    mem_limit: 128mb
 
   nats:
     image: nats
@@ -315,6 +332,7 @@ services:
     restart: on-failure
     networks:
       - network
+    mem_limit: 128mb
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -323,6 +341,7 @@ services:
       - "16686:16686"
     networks:
       - network
+    mem_limit: 128mb
 
   collector:
     image: otel/opentelemetry-collector:latest
@@ -331,6 +350,7 @@ services:
       - ./api_gateway/otel-collector-config.yaml:/etc/otel-collector-config.yaml
     networks:
       - network
+    mem_limit: 128mb
 
 volumes:
   cassandra_store:
