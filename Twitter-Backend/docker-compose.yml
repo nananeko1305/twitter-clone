@@ -177,6 +177,21 @@ services:
       - ./report_service/logs:/app/logs
     mem_limit: 128mb
 
+  tweet_report_service:
+    build:
+      context: .
+      dockerfile: ./tweet_report_service/Dockerfile
+    container_name: tweet_report_service
+    environment:
+      TWEET_REPORT_SERVICE_PORT : ${TWEET_REPORT_SERVICE_PORT}
+    ports:
+      - ${TWEET_REPORT_SERVICE_PORT}:${TWEET_REPORT_SERVICE_PORT}
+    restart: always
+    networks:
+      - network
+    mem_limit: 128mb
+
+
   api_gateway:
     build:
       context: ./api_gateway/

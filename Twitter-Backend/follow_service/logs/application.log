@@ -18216,3 +18216,8 @@ time="2023-07-25T22:29:53Z" level=info msg="follow_service : successful init of 
 time="2023-07-25T22:31:12Z" level=info msg="follow_service : successful init of enforcer"
 time="2023-07-25T22:32:16Z" level=info msg="follow_service : successful init of enforcer"
 time="2023-07-25T22:33:40Z" level=info msg="follow_service : successful init of enforcer"
+time="2023-07-26T17:39:57Z" level=info msg="follow_service : successful init of enforcer"
+time="2023-07-26T17:43:10Z" level=info msg="follow_service : successful init of enforcer"
+time="2023-07-26T17:48:00Z" level=info msg="follow_service : successful init of enforcer"
+time="2023-07-26T17:55:01Z" level=info msg="follow_service : successful init of enforcer"
+time="2023-07-26T18:03:52Z" level=info msg="follow_service : successful init of enforcer"
