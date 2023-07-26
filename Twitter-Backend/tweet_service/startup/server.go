@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 	saga "github.com/zjalicf/twitter-clone-common/common/saga/messaging"
 	"github.com/zjalicf/twitter-clone-common/common/saga/messaging/nats"
 	"go.opentelemetry.io/otel"
@@ -29,15 +28,12 @@ import (
 	store2 "tweet_service/store"
 )
 
-var Logger = logrus.New()
-
 type Server struct {
 	config *config.Config
 }
 
 const (
-	QueueGroup  = "tweet_service"
-	LogFilePath = "/app/logs/application.log"
+	QueueGroup = "tweet_service"
 )
 
 func NewServer(config *config.Config) *Server {
@@ -46,44 +42,7 @@ func NewServer(config *config.Config) *Server {
 	}
 }
 
-func initLogger() {
-	file, err := os.OpenFile(LogFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	Logger.SetOutput(file)
-
-	rotationInterval := 24 * time.Hour
-	ticker := time.NewTicker(rotationInterval)
-	defer ticker.Stop()
-
-	go func() {
-		for range ticker.C {
-			rotateLogs(file)
-		}
-	}()
-}
-
-func rotateLogs(file *os.File) {
-	currentTime := time.Now().Format("2006-01-02_15-04-05")
-	err := os.Rename("/app/logs/application.log", "/app/logs/application_"+currentTime+".log")
-	if err != nil {
-		Logger.Error(err)
-	}
-	file.Close()
-
-	file, err = os.OpenFile("/app/logs/application.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		Logger.Error(err)
-	}
-
-	Logger.SetOutput(file)
-}
-
 func (server *Server) Start() {
-
-	initLogger()
 
 	cfg := config.NewConfig()
 
@@ -100,7 +59,7 @@ func (server *Server) Start() {
 
 	redisClient := server.initRedisClient()
 	tweetCache := server.initTweetCache(redisClient, tracer)
-	tweetStore, err := store.New(log.Default(), tracer, Logger)
+	tweetStore, err := store.New(tracer)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -113,16 +72,15 @@ func (server *Server) Start() {
 
 	createReportOrchestrator := server.initCreateEventOrchestrator(commandPublisher, replySubscriber, tracer)
 
-	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, createReportOrchestrator, Logger)
+	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, createReportOrchestrator)
 
-	tweetHandler := server.initTweetHandler(tweetService, tracer, Logger)
+	tweetHandler := server.initTweetHandler(tweetService, tracer)
 
 	server.start(tweetHandler)
 }
 
-func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, orchestrator *application2.CreateEventOrchestrator, logging *logrus.Logger) *application.TweetService {
-	service := application.NewTweetService(&store, cache, tracer, orchestrator, Logger)
-	Logger.Info("Started tweet service")
+func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, orchestrator *application2.CreateEventOrchestrator) *application.TweetService {
+	service := application.NewTweetService(&store, cache, tracer, orchestrator)
 	return service
 }
 
@@ -131,8 +89,8 @@ func (server *Server) initTweetCache(client *redis.Client, tracer trace.Tracer) 
 	return cache
 }
 
-func (server *Server) initTweetHandler(service *application.TweetService, tracer trace.Tracer, logging *logrus.Logger) *handlers.TweetHandler {
-	return handlers.NewTweetHandler(service, tracer, logging)
+func (server *Server) initTweetHandler(service *application.TweetService, tracer trace.Tracer) *handlers.TweetHandler {
+	return handlers.NewTweetHandler(service, tracer)
 }
 
 func (server *Server) initRedisClient() *redis.Client {

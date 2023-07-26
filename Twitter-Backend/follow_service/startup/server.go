@@ -10,7 +10,6 @@ import (
 	"follow_service/store"
 	"github.com/gorilla/mux"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"github.com/sirupsen/logrus"
 	saga "github.com/zjalicf/twitter-clone-common/common/saga/messaging"
 	"github.com/zjalicf/twitter-clone-common/common/saga/messaging/nats"
 	"go.opentelemetry.io/otel"
@@ -37,47 +36,9 @@ func NewServer(config *config.Config) *Server {
 	}
 }
 
-var Logger = logrus.New()
-
 const (
-	QueueGroup  = "follow_service"
-	LogFilePath = "/app/logs/application.log"
+	QueueGroup = "follow_service"
 )
-
-func initLogger() {
-	file, err := os.OpenFile(LogFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	Logger.SetOutput(file)
-
-	rotationInterval := 24 * time.Hour
-	ticker := time.NewTicker(rotationInterval)
-	defer ticker.Stop()
-
-	go func() {
-		for range ticker.C {
-			rotateLogs(file)
-		}
-	}()
-}
-
-func rotateLogs(file *os.File) {
-	currentTime := time.Now().Format("2006-01-02_15-04-05")
-	err := os.Rename("/app/logs/application.log", "/app/logs/application_"+currentTime+".log")
-	if err != nil {
-		Logger.Error(err)
-	}
-	file.Close()
-
-	file, err = os.OpenFile("/app/logs/application.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		Logger.Error(err)
-	}
-
-	Logger.SetOutput(file)
-}
 
 func (server *Server) initNeo4JDriver() *neo4j.DriverWithContext {
 	driver, err := store.GetClient(server.config.FollowDBHost, server.config.FollowDBPort,
@@ -89,8 +50,6 @@ func (server *Server) initNeo4JDriver() *neo4j.DriverWithContext {
 }
 
 func (server *Server) Start() {
-
-	initLogger()
 
 	cfg := config.NewConfig()
 
@@ -106,9 +65,9 @@ func (server *Server) Start() {
 	tracer := tp.Tracer("follow_service")
 
 	neo4jDriver := server.initNeo4JDriver()
-	followStore := server.initFollowStore(neo4jDriver, tracer, Logger)
-	followService := server.initFollowService(followStore, tracer, Logger)
-	followHandler := server.initFollowHandler(followService, tracer, Logger)
+	followStore := server.initFollowStore(neo4jDriver, tracer)
+	followService := server.initFollowService(followStore, tracer)
+	followHandler := server.initFollowHandler(followService, tracer)
 
 	//saga init
 	replyPublisher := server.initPublisher(server.config.CreateUserReplySubject)
@@ -119,18 +78,18 @@ func (server *Server) Start() {
 	server.start(followHandler)
 }
 
-func (server *Server) initFollowStore(driver *neo4j.DriverWithContext, tracer trace.Tracer, logging *logrus.Logger) domain.FollowRequestStore {
-	store := store.NewFollowNeo4JStore(driver, tracer, logging)
+func (server *Server) initFollowStore(driver *neo4j.DriverWithContext, tracer trace.Tracer) domain.FollowRequestStore {
+	store := store.NewFollowNeo4JStore(driver, tracer)
 
 	return store
 }
 
-func (server *Server) initFollowService(store domain.FollowRequestStore, tracer trace.Tracer, logging *logrus.Logger) *application.FollowService {
-	return application.NewFollowService(store, tracer, logging)
+func (server *Server) initFollowService(store domain.FollowRequestStore, tracer trace.Tracer) *application.FollowService {
+	return application.NewFollowService(store, tracer)
 }
 
-func (server *Server) initFollowHandler(service *application.FollowService, tracer trace.Tracer, logging *logrus.Logger) *handlers.FollowHandler {
-	return handlers.NewFollowHandler(service, tracer, logging)
+func (server *Server) initFollowHandler(service *application.FollowService, tracer trace.Tracer) *handlers.FollowHandler {
+	return handlers.NewFollowHandler(service, tracer)
 }
 
 func (server *Server) initCreateUserHandler(service *application.FollowService, publisher saga.Publisher, subscriber saga.Subscriber, tracer trace.Tracer) {

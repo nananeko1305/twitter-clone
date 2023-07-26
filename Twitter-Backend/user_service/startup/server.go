@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 	saga "github.com/zjalicf/twitter-clone-common/common/saga/messaging"
 	"github.com/zjalicf/twitter-clone-common/common/saga/messaging/nats"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,15 +26,12 @@ import (
 	"user_service/store"
 )
 
-var Logger = logrus.New()
-
 type Server struct {
 	config *config.Config
 }
 
 const (
-	QueueGroup  = "user_service"
-	LogFilePath = "/app/logs/application.log"
+	QueueGroup = "user_service"
 )
 
 func NewServer(config *config.Config) *Server {
@@ -44,43 +40,7 @@ func NewServer(config *config.Config) *Server {
 	}
 }
 
-func initLogger() {
-	file, err := os.OpenFile(LogFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	Logger.SetOutput(file)
-
-	rotationInterval := 24 * time.Hour
-	ticker := time.NewTicker(rotationInterval)
-	defer ticker.Stop()
-
-	go func() {
-		for range ticker.C {
-			rotateLogs(file)
-		}
-	}()
-}
-
-func rotateLogs(file *os.File) {
-	currentTime := time.Now().Format("2006-01-02_15-04-05")
-	err := os.Rename("/app/logs/application.log", "/app/logs/application_"+currentTime+".log")
-	if err != nil {
-		Logger.Error(err)
-	}
-	file.Close()
-
-	file, err = os.OpenFile("/app/logs/application.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		Logger.Error(err)
-	}
-
-	Logger.SetOutput(file)
-}
-
 func (server *Server) Start() {
-	initLogger()
 
 	mongoClient := server.initMongoClient()
 	defer func(mongoClient *mongo.Client, ctx context.Context) {
@@ -107,26 +67,26 @@ func (server *Server) Start() {
 	otel.SetTracerProvider(tp)
 	tracer := tp.Tracer("user_service")
 
-	userStore := server.initUserStore(mongoClient, tracer, Logger)
-	userService := server.initUserService(userStore, tracer, Logger)
-	userHandler := server.initUserHandler(userService, tracer, Logger)
+	userStore := server.initUserStore(mongoClient, tracer)
+	userService := server.initUserService(userStore, tracer)
+	userHandler := server.initUserHandler(userService, tracer)
 
 	server.initCreateUserHandler(userService, replyPublisher, commandSubscriber, tracer)
 
 	server.start(userHandler)
 }
 
-func (server *Server) initUserStore(client *mongo.Client, tracer trace.Tracer, logging *logrus.Logger) domain.UserStore {
-	userStore := store.NewUserMongoDBStore(client, tracer, logging)
+func (server *Server) initUserStore(client *mongo.Client, tracer trace.Tracer) domain.UserStore {
+	userStore := store.NewUserMongoDBStore(client, tracer)
 	return userStore
 }
 
-func (server *Server) initUserService(store domain.UserStore, tracer trace.Tracer, logging *logrus.Logger) *application.UserService {
-	return application.NewUserService(store, tracer, logging)
+func (server *Server) initUserService(store domain.UserStore, tracer trace.Tracer) *application.UserService {
+	return application.NewUserService(store, tracer)
 }
 
-func (server *Server) initUserHandler(service *application.UserService, tracer trace.Tracer, logging *logrus.Logger) *handlers.UserHandler {
-	return handlers.NewUserHandler(service, tracer, logging)
+func (server *Server) initUserHandler(service *application.UserService, tracer trace.Tracer) *handlers.UserHandler {
+	return handlers.NewUserHandler(service, tracer)
 }
 
 func (server *Server) initMongoClient() *mongo.Client {

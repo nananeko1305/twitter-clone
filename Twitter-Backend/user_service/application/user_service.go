@@ -3,7 +3,6 @@ package application
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"github.com/zjalicf/twitter-clone-common/common/saga/create_user"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.opentelemetry.io/otel/trace"
@@ -13,16 +12,14 @@ import (
 )
 
 type UserService struct {
-	store   domain.UserStore
-	tracer  trace.Tracer
-	logging *logrus.Logger
+	store  domain.UserStore
+	tracer trace.Tracer
 }
 
-func NewUserService(store domain.UserStore, tracer trace.Tracer, logging *logrus.Logger) *UserService {
+func NewUserService(store domain.UserStore, tracer trace.Tracer) *UserService {
 	return &UserService{
-		store:   store,
-		tracer:  tracer,
-		logging: logging,
+		store:  store,
+		tracer: tracer,
 	}
 }
 
@@ -30,19 +27,15 @@ func (service *UserService) Get(ctx context.Context, id primitive.ObjectID) (*do
 	ctx, span := service.tracer.Start(ctx, "UserService.Get")
 	defer span.End()
 
-	service.logging.Infoln("UserService.Get : get service reached")
-
 	return service.store.Get(ctx, id)
 }
 
 func (service *UserService) DoesEmailExist(ctx context.Context, email string) (string, error) {
 	ctx, span := service.tracer.Start(ctx, "UserService.DoesEmailExist")
 	defer span.End()
-	service.logging.Infoln("UserService.DoesEmailExist : email service reached")
 
 	user, err := service.store.GetByEmail(ctx, email)
 	if err != nil {
-		service.logging.Errorln("UserService failed getByEmail")
 		return "", err
 	}
 
@@ -52,7 +45,6 @@ func (service *UserService) DoesEmailExist(ctx context.Context, email string) (s
 func (service *UserService) GetAll(ctx context.Context) ([]*domain.User, error) {
 	ctx, span := service.tracer.Start(ctx, "UserService.GetAll")
 	defer span.End()
-	service.logging.Infoln("UserService.GetAll : getAll service reached")
 
 	return service.store.GetAll(ctx)
 }
@@ -61,11 +53,8 @@ func (service *UserService) GetOneUser(ctx context.Context, username string) (*d
 	ctx, span := service.tracer.Start(ctx, "UserService.GetOneUser")
 	defer span.End()
 
-	service.logging.Infoln("UserService.GetOneUser : getOneUser service reached")
-
 	retUser, err := service.store.GetOneUser(ctx, username)
 	if err != nil {
-		service.logging.Errorln("UserService.GetOneUser : failed to query")
 		return nil, fmt.Errorf("user not found")
 	}
 	return retUser, nil
@@ -75,7 +64,6 @@ func (service *UserService) Register(ctx context.Context, user *domain.User) (*d
 
 	ctx, span := service.tracer.Start(ctx, "UserService.Register")
 	defer span.End()
-	service.logging.Infoln("UserService.Register : register service reached")
 
 	validatedUser, err := validateUserType(user)
 	if err != nil {
@@ -90,7 +78,6 @@ func (service *UserService) Register(ctx context.Context, user *domain.User) (*d
 
 	retUser, err := service.store.Post(ctx, validatedUser)
 	if err != nil {
-		service.logging.Errorln("UserService failed to insert user into db")
 		log.Println(errors.DatabaseError)
 		return nil, fmt.Errorf(errors.DatabaseError)
 	}
@@ -103,18 +90,14 @@ func (service *UserService) ChangeUserVisibility(ctx context.Context, userID str
 	ctx, span := service.tracer.Start(ctx, "UserService.ChangeUserVisibility")
 	defer span.End()
 
-	service.logging.Infoln("UserService.ChangeVisibility : visibility service reached")
-
 	primitiveID, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
-		service.logging.Errorln("UserService failed to parse userID")
 		log.Println("Primitive ID parsing error.")
 		return err
 	}
 
 	user, err := service.store.Get(ctx, primitiveID)
 	if err != nil {
-		service.logging.Errorln("UserService failed to get user")
 		log.Printf("Getting user by id error: %s", err.Error())
 		return fmt.Errorf(errors.UserNotFound)
 	}
@@ -122,7 +105,6 @@ func (service *UserService) ChangeUserVisibility(ctx context.Context, userID str
 	user.Privacy = !user.Privacy
 	err = service.store.UpdateUser(ctx, user)
 	if err != nil {
-		service.logging.Errorln("UserService failed to update user")
 		log.Printf("Updating user error in service: %s", err.Error())
 		return err
 	}
@@ -133,8 +115,6 @@ func (service *UserService) ChangeUserVisibility(ctx context.Context, userID str
 func (service *UserService) DeleteUserByID(ctx context.Context, id primitive.ObjectID) error {
 	ctx, span := service.tracer.Start(ctx, "UserService.DeleteUserByID")
 	defer span.End()
-
-	service.logging.Infoln("UserService.Delete : delete service reached")
 
 	return service.store.DeleteUserByID(ctx, id)
 }

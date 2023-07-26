@@ -5,7 +5,6 @@ import (
 	"log"
 	"user_service/domain"
 
-	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,23 +19,19 @@ const (
 type UserMongoDBStore struct {
 	users  *mongo.Collection
 	tracer trace.Tracer
-	logging *logrus.Logger
 }
 
-func NewUserMongoDBStore(client *mongo.Client, tracer trace.Tracer, logging *logrus.Logger) domain.UserStore {
+func NewUserMongoDBStore(client *mongo.Client, tracer trace.Tracer) domain.UserStore {
 	users := client.Database(DATABASE).Collection(COLLECTION)
 	return &UserMongoDBStore{
 		users:  users,
 		tracer: tracer,
-		logging: logging,
 	}
 }
 
 func (store *UserMongoDBStore) GetAll(ctx context.Context) ([]*domain.User, error) {
 	ctx, span := store.tracer.Start(ctx, "UserStore.GetAll")
 	defer span.End()
-
-	store.logging.Infoln("Store: getAll reached")
 
 	filter := bson.D{{}}
 	return store.filter(filter)
@@ -46,8 +41,6 @@ func (store *UserMongoDBStore) Get(ctx context.Context, id primitive.ObjectID) (
 	ctx, span := store.tracer.Start(ctx, "UserStore.Get")
 	defer span.End()
 
-	store.logging.Infoln("Store: get reached")
-
 	filter := bson.M{"_id": id}
 	return store.filterOne(filter)
 }
@@ -56,8 +49,6 @@ func (store *UserMongoDBStore) GetByEmail(ctx context.Context, email string) (*d
 	ctx, span := store.tracer.Start(ctx, "UserStore.GetByEmail")
 	defer span.End()
 
-	store.logging.Infoln("Store: getByEmail reached")
-
 	filter := bson.M{"email": email}
 	return store.filterOne(filter)
 }
@@ -65,8 +56,6 @@ func (store *UserMongoDBStore) GetByEmail(ctx context.Context, email string) (*d
 func (store *UserMongoDBStore) Post(ctx context.Context, user *domain.User) (*domain.User, error) {
 	ctx, span := store.tracer.Start(ctx, "UserStore.Post")
 	defer span.End()
-
-	store.logging.Infoln("Store: post reached")
 
 	result, err := store.users.InsertOne(context.TODO(), user)
 	if err != nil {
@@ -79,8 +68,6 @@ func (store *UserMongoDBStore) Post(ctx context.Context, user *domain.User) (*do
 func (store *UserMongoDBStore) UpdateUser(ctx context.Context, user *domain.User) error {
 	ctx, span := store.tracer.Start(ctx, "UserStore.UpdateUser")
 	defer span.End()
-
-	store.logging.Infoln("Store: updateUser reached")
 
 	_, err := store.users.UpdateOne(context.TODO(), bson.M{"_id": user.ID}, bson.M{"$set": user})
 	if err != nil {
@@ -95,8 +82,6 @@ func (store *UserMongoDBStore) GetOneUser(ctx context.Context, username string) 
 	ctx, span := store.tracer.Start(ctx, "UserStore.GetOneUser")
 	defer span.End()
 
-	store.logging.Infoln("Store: getOneUser reached")
-
 	filter := bson.M{"username": username}
 
 	user, err := store.filterOne(filter)
@@ -110,8 +95,6 @@ func (store *UserMongoDBStore) GetOneUser(ctx context.Context, username string) 
 func (store *UserMongoDBStore) DeleteUserByID(ctx context.Context, id primitive.ObjectID) error {
 	ctx, span := store.tracer.Start(ctx, "UserStore.DeleteUserByID")
 	defer span.End()
-
-	store.logging.Infoln("Store: delete reached")
 
 	_, err := store.users.DeleteMany(ctx, bson.M{"_id": id})
 	if err != nil {

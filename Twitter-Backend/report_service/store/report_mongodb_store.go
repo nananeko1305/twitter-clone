@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	events "github.com/zjalicf/twitter-clone-common/common/saga/create_event"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,17 +23,15 @@ type ReportMongoDBStore struct {
 	dailyReports   *mongo.Collection
 	monthlyReports *mongo.Collection
 	tracer         trace.Tracer
-	logging        *logrus.Logger
 }
 
-func NewReportMongoDBStore(client *mongo.Client, tracer trace.Tracer, logging *logrus.Logger) domain.ReportStore {
+func NewReportMongoDBStore(client *mongo.Client, tracer trace.Tracer) domain.ReportStore {
 	dailyReports := client.Database(DATABASE).Collection(COLLECTION_DAILY)
 	monthlyReports := client.Database(DATABASE).Collection(COLLECTION_MONTHLY)
 	return &ReportMongoDBStore{
 		dailyReports:   dailyReports,
 		monthlyReports: monthlyReports,
 		tracer:         tracer,
-		logging:        logging,
 	}
 }
 
@@ -42,13 +39,10 @@ func (store *ReportMongoDBStore) GetReportForAd(ctx context.Context, tweetID str
 	ctx, span := store.tracer.Start(ctx, "ReportMongoDBStore.GetReportForAd")
 	defer span.End()
 
-	store.logging.Infoln("ReportStore.GetReportForAd : reached Get Report For Ad in store")
-
 	if reportType == "daily" {
 
 		result, err := store.filterOneDaily(bson.M{"tweet_id": tweetID, "timestamp": timestamp})
 		if err != nil {
-			store.logging.Errorf("ReportStore.GetReportForAd.FilterOneDaily() : %s", err)
 			return nil, err
 		}
 		return result, nil
@@ -57,7 +51,6 @@ func (store *ReportMongoDBStore) GetReportForAd(ctx context.Context, tweetID str
 
 		result, err := store.filterOneMonthly(bson.M{"tweet_id": tweetID, "timestamp": timestamp})
 		if err != nil {
-			store.logging.Errorf("ReportStore.GetReportForAd.FilterOneMonthly() : %s", err)
 			return nil, err
 		}
 		return result, nil
@@ -71,11 +64,8 @@ func (store *ReportMongoDBStore) CreateReport(ctx context.Context, event *events
 	ctx, span := store.tracer.Start(ctx, "ReportMongoDBStore.CreateReport")
 	defer span.End()
 
-	store.logging.Infoln("ReportStore.CreateReport : reached CreateReport in store")
-
 	oneDaily, err := store.filterOneDaily(bson.M{"tweet_id": event.TweetID, "timestamp": dailyUnix})
 	if err != nil {
-		store.logging.Errorf("Error in ReportMongoStore.filterOneDaily(), filterOneDaily: %s", err.Error())
 		report := domain.Report{
 			ID:          primitive.NewObjectID(),
 			TweetID:     event.TweetID,
@@ -100,7 +90,6 @@ func (store *ReportMongoDBStore) CreateReport(ctx context.Context, event *events
 
 		_, err = store.dailyReports.InsertOne(ctx, report)
 		if err != nil {
-			store.logging.Errorf("Error in ReportMongoStore, daily_report: %s", err.Error())
 			return nil, err
 		}
 	} else {
@@ -122,7 +111,6 @@ func (store *ReportMongoDBStore) CreateReport(ctx context.Context, event *events
 
 		_, err = store.dailyReports.UpdateOne(context.TODO(), bson.M{"_id": oneDaily.ID}, bson.M{"$set": oneDaily})
 		if err != nil {
-			store.logging.Errorf("Error in report_mongodb CreateReport() Unlike monthly: %s", err.Error())
 			return nil, err
 		}
 
@@ -130,7 +118,6 @@ func (store *ReportMongoDBStore) CreateReport(ctx context.Context, event *events
 	//monthly
 	oneMonthly, err := store.filterOneMonthly(bson.M{"tweet_id": event.TweetID, "timestamp": monthlyUnix})
 	if err != nil {
-		store.logging.Errorf("Error in ReportMongoStore.filterOneMonthly(), filterOneMonthly: %s", err.Error())
 		report := domain.Report{
 			ID:          primitive.NewObjectID(),
 			TweetID:     event.TweetID,
@@ -154,7 +141,6 @@ func (store *ReportMongoDBStore) CreateReport(ctx context.Context, event *events
 		}
 		_, err = store.monthlyReports.InsertOne(ctx, report)
 		if err != nil {
-			store.logging.Errorf("Error in ReportMongoStore, monthly_reporst: %s", err.Error())
 			return nil, err
 		}
 	} else {
@@ -177,7 +163,6 @@ func (store *ReportMongoDBStore) CreateReport(ctx context.Context, event *events
 		}
 		_, err = store.monthlyReports.UpdateOne(context.TODO(), bson.M{"_id": oneMonthly.ID}, bson.M{"$set": oneMonthly})
 		if err != nil {
-			store.logging.Errorf("Error in report_mongodb CreateReport() Like monthly: %s", err.Error())
 			return nil, err
 		}
 
@@ -191,7 +176,6 @@ func (store *ReportMongoDBStore) filterDaily(filter interface{}) ([]*domain.Repo
 	defer cursor.Close(context.TODO())
 
 	if err != nil {
-		store.logging.Errorf("Error in report_mongodb filter() Unlike daily: %s", err.Error())
 		return nil, err
 	}
 	return decode(cursor)

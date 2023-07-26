@@ -4,17 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gocql/gocql"
+	"github.com/sony/gobreaker"
+	events "github.com/zjalicf/twitter-clone-common/common/saga/create_event"
+	"go.opentelemetry.io/otel/trace"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"time"
 	"tweet_service/domain"
-	"github.com/gocql/gocql"
-	"github.com/sirupsen/logrus"
-	"github.com/sony/gobreaker"
-	events "github.com/zjalicf/twitter-clone-common/common/saga/create_event"
-	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -28,25 +27,21 @@ type TweetService struct {
 	cache        domain.TweetCache
 	cb           *gobreaker.CircuitBreaker
 	orchestrator *CreateEventOrchestrator
-	logging      *logrus.Logger
 }
 
-func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, orchestrator *CreateEventOrchestrator, logging *logrus.Logger) *TweetService {
+func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, orchestrator *CreateEventOrchestrator) *TweetService {
 	return &TweetService{
 		store:        store,
 		cache:        cache,
 		cb:           CircuitBreaker(),
 		orchestrator: orchestrator,
 		tracer:       tracer,
-		logging: logging,
 	}
 }
 
 func (service *TweetService) GetAll(ctx context.Context) ([]domain.Tweet, error) {
 	ctx, span := service.tracer.Start(ctx, "TweetService.GetAll")
 	defer span.End()
-
-	service.logging.Infoln("TweetService.GetAll : getAll service reached")
 
 	return service.store.GetAll(ctx)
 }
@@ -55,15 +50,12 @@ func (service *TweetService) GetOne(ctx context.Context, tweetID string) (*domai
 	ctx, span := service.tracer.Start(ctx, "TweetService.GetOne")
 	defer span.End()
 
-	service.logging.Infoln("TweetService.GetOne : getOne service reached")
-
 	return service.store.GetOne(ctx, tweetID)
 }
 
 func (service *TweetService) GetTweetsByUser(ctx context.Context, username string) ([]*domain.Tweet, error) {
 	ctx, span := service.tracer.Start(ctx, "TweetService.GetTweetsByUser")
 	defer span.End()
-	service.logging.Infoln("TweetService.getTweetsbyUser : tweetsByUser service reached")
 
 	return service.store.GetTweetsByUser(ctx, username)
 }
@@ -72,7 +64,6 @@ func (service *TweetService) GetFeedByUser(ctx context.Context, token string) (*
 	ctx, span := service.tracer.Start(ctx, "TweetService.GetFeedByUser")
 	defer span.End()
 
-	service.logging.Infoln("Feed : feed service reached")
 	followServiceEndpoint := fmt.Sprintf("http://%s:%s/feedInfo", followServiceHost, followServicePort)
 	followServiceRequest, _ := http.NewRequest("GET", followServiceEndpoint, nil)
 	followServiceRequest.Header.Add("Authorization", token)
@@ -80,7 +71,6 @@ func (service *TweetService) GetFeedByUser(ctx context.Context, token string) (*
 
 		responseFservice, err := http.DefaultClient.Do(followServiceRequest)
 		if err != nil {
-			service.logging.Errorln("follow service error")
 			return nil, fmt.Errorf("FollowServiceError")
 		}
 
@@ -108,7 +98,6 @@ func (service *TweetService) GetFeedByUser(ctx context.Context, token string) (*
 	feedInfo := bodyBytes.(domain.FeedInfo)
 	feed, err := service.store.GetPostsFeedByUser(ctx, feedInfo.Usernames)
 	if err != nil {
-		service.logging.Errorln("error getting feed by user")
 		return nil, err
 	}
 
@@ -135,8 +124,6 @@ func (service *TweetService) saveImage(ctx context.Context, tweetID gocql.UUID, 
 	ctx, span := service.tracer.Start(ctx, "TweetService.saveImage")
 	defer span.End()
 
-	service.logging.Infoln("saveimage : saveimage service reached")
-
 	return service.store.SaveImage(ctx, tweetID, imageBytes)
 }
 
@@ -144,16 +131,12 @@ func (service *TweetService) GetLikesByTweet(ctx context.Context, tweetID string
 	ctx, span := service.tracer.Start(ctx, "TweetService.GetLikesByTweet")
 	defer span.End()
 
-	service.logging.Infoln("TweetService : likesbytweet service reached")
-
 	return service.store.GetLikesByTweet(ctx, tweetID)
 }
 
 func (service *TweetService) Post(ctx context.Context, tweet *domain.Tweet, username string, image *[]byte) (*domain.Tweet, error) {
 	ctx, span := service.tracer.Start(ctx, "TweetService.Post")
 	defer span.End()
-
-	service.logging.Infoln("TweetService : likesbytweet service reached")
 
 	tweet.ID, _ = gocql.RandomUUID()
 
@@ -185,11 +168,8 @@ func (service *TweetService) Favorite(ctx context.Context, id string, username s
 	ctx, span := service.tracer.Start(ctx, "TweetService.Favorite")
 	defer span.End()
 
-	service.logging.Infoln("TweetService : favorite service reached")
-
 	status, err := service.store.Favorite(ctx, id, username)
 	if err != nil {
-		service.logging.Errorln("TweetService : favorite error")
 		return status, err
 	}
 
@@ -219,8 +199,6 @@ func (service *TweetService) TimeSpentOnAd(ctx context.Context, timespent *domai
 	ctx, span := service.tracer.Start(ctx, "TweetService.TimeSpentOnAd")
 	defer span.End()
 
-	service.logging.Infoln("TimeSpentOnAd : timespent service reached")
-
 	event := events.Event{
 		TweetID:   timespent.TweetID,
 		Type:      "Timespent",
@@ -230,7 +208,6 @@ func (service *TweetService) TimeSpentOnAd(ctx context.Context, timespent *domai
 
 	err := service.orchestrator.Start(ctx, event)
 	if err != nil {
-		service.logging.Errorln("orchestrator failure")
 		return err
 	}
 
@@ -241,8 +218,6 @@ func (service *TweetService) GetTweetImage(ctx context.Context, id string) (*[]b
 	ctx, span := service.tracer.Start(ctx, "TweetService.GetTweetImage")
 	defer span.End()
 
-	service.logging.Infoln("TweetService : getTweetImage service reached")
-
 	cachedImage, _ := service.cache.GetCachedValue(ctx, id)
 
 	if cachedImage != nil {
@@ -251,7 +226,6 @@ func (service *TweetService) GetTweetImage(ctx context.Context, id string) (*[]b
 
 	image, err := service.store.GetTweetImage(ctx, id)
 	if err != nil {
-		service.logging.Errorln("TweetService : gettweetImage error")
 		return nil, err
 	}
 
@@ -267,8 +241,6 @@ func (service *TweetService) ViewProfileFromAd(ctx context.Context, tweetID doma
 	ctx, span := service.tracer.Start(ctx, "TweetService.ViewProfileFromAd")
 	defer span.End()
 
-	service.logging.Infoln("TweetService : viewProfileFromAd service reached")
-
 	event := events.Event{
 		TweetID:   tweetID.ID,
 		Type:      "ViewCount",
@@ -278,7 +250,6 @@ func (service *TweetService) ViewProfileFromAd(ctx context.Context, tweetID doma
 
 	err := service.orchestrator.Start(ctx, event)
 	if err != nil {
-		service.logging.Errorln("TweetService : orchestrator fail")
 		return err
 	}
 	return nil
@@ -289,11 +260,8 @@ func (service *TweetService) Retweet(ctx context.Context, id string, username st
 	ctx, span := service.tracer.Start(ctx, "TweetService.Retweet")
 	defer span.End()
 
-	service.logging.Infoln("TweetService : retweet service reached")
-
 	tweet, err := service.store.GetOne(ctx, id)
 	if err != nil {
-		service.logging.Errorln("TweetService : getOne failed")
 		return 500, err
 	}
 
@@ -305,7 +273,6 @@ func (service *TweetService) Retweet(ctx context.Context, id string, username st
 	if tweet.Image {
 		image, err := service.store.GetTweetImage(ctx, tweet.ID.String())
 		if err != nil {
-			service.logging.Errorln("TweetService : getTweetImage error")
 			return 500, err
 		}
 

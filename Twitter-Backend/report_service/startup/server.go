@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 	saga "github.com/zjalicf/twitter-clone-common/common/saga/messaging"
 	"github.com/zjalicf/twitter-clone-common/common/saga/messaging/nats"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,51 +26,13 @@ import (
 	"time"
 )
 
-var Logger = logrus.New()
-
 type Server struct {
 	config *config.Config
 }
 
 const (
-	QueueGroup  = "report_service"
-	LogFilePath = "/app/logs/application.log"
+	QueueGroup = "report_service"
 )
-
-func initLogger() {
-	file, err := os.OpenFile(LogFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	Logger.SetOutput(file)
-
-	rotationInterval := 24 * time.Hour
-	ticker := time.NewTicker(rotationInterval)
-	defer ticker.Stop()
-
-	go func() {
-		for range ticker.C {
-			rotateLogs(file)
-		}
-	}()
-}
-
-func rotateLogs(file *os.File) {
-	currentTime := time.Now().Format("2006-01-02_15-04-05")
-	err := os.Rename("/app/logs/application.log", "/app/logs/application_"+currentTime+".log")
-	if err != nil {
-		Logger.Error(err)
-	}
-	file.Close()
-
-	file, err = os.OpenFile("/app/logs/application.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		Logger.Error(err)
-	}
-
-	Logger.SetOutput(file)
-}
 
 func NewServer(config *config.Config) *Server {
 	return &Server{
@@ -80,8 +41,6 @@ func NewServer(config *config.Config) *Server {
 }
 
 func (server *Server) Start() {
-
-	initLogger()
 
 	mongoClient := server.initMongoClient()
 	defer func(mongoClient *mongo.Client, ctx context.Context) {
@@ -105,7 +64,7 @@ func (server *Server) Start() {
 	tracer := tp.Tracer("report_service")
 
 	reportStore := server.initReportStore(mongoClient, tracer)
-	cassandraStore, err := store.New(Logger, tracer)
+	cassandraStore, err := store.New(tracer)
 	if err != nil {
 		log.Printf("Error in server cassandra store.New(): %s", err.Error())
 		log.Fatal(err)
@@ -165,16 +124,16 @@ func newTraceProvider(exp sdktrace.SpanExporter) *sdktrace.TracerProvider {
 }
 
 func (server *Server) initReportStore(client *mongo.Client, tracer trace.Tracer) domain.ReportStore {
-	store2 := store.NewReportMongoDBStore(client, tracer, Logger)
+	store2 := store.NewReportMongoDBStore(client, tracer)
 	return store2
 }
 
 func (server *Server) initReportService(eventStore domain.EventStore, reportStore domain.ReportStore, tracer trace.Tracer) *application.ReportService {
-	return application.NewReportService(eventStore, reportStore, tracer, Logger)
+	return application.NewReportService(eventStore, reportStore, tracer)
 }
 
 func (server *Server) initReportHandler(service *application.ReportService, tracer trace.Tracer) *handlers.ReportHandler {
-	return handlers.NewReportHandler(service, tracer, Logger)
+	return handlers.NewReportHandler(service, tracer)
 }
 
 func (server *Server) initPublisher(subject string) saga.Publisher {

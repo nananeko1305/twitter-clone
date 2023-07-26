@@ -37,8 +37,6 @@ services:
         condition: service_started
     networks:
       - network
-    volumes:
-      - ./tweet_service/logs:/app/logs
     mem_limit: 128mb
 
   user_service:
@@ -68,8 +66,6 @@ services:
       - auth_service
     networks:
       - network
-    volumes:
-      - ./user_service/logs:/app/logs
     mem_limit: 128mb
 
   auth_service:
@@ -98,16 +94,12 @@ services:
       NATS_PASS: ${NATS_PASS}
       CREATE_USER_COMMAND_SUBJECT: ${CREATE_USER_COMMAND_SUBJECT}
       CREATE_USER_REPLY_SUBJECT: ${CREATE_USER_REPLY_SUBJECT}
-      JAEGER_ADDRESS: ${JAEGER_ADDRESS}
     depends_on:
       - auth_db
       - auth_cache
-      - jaeger
       - nats
     networks:
       - network
-    volumes:
-      - ./auth_service/logs:/app/logs
     mem_limit: 128mb
 
   follow_service:
@@ -139,8 +131,6 @@ services:
       - user_service
     networks:
       - network
-    volumes:
-      - ./follow_service/logs:/app/logs
     mem_limit: 128mb
 
   report_service:
@@ -173,8 +163,6 @@ services:
         condition: service_healthy
     networks:
       - network
-    volumes:
-      - ./report_service/logs:/app/logs
     mem_limit: 128mb
 
   tweet_report_service:

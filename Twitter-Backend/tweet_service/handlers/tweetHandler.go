@@ -15,7 +15,6 @@ import (
 	"github.com/casbin/casbin"
 	"github.com/cristalhq/jwt/v4"
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
@@ -24,17 +23,15 @@ import (
 type TweetHandler struct {
 	service *application.TweetService
 	tracer  trace.Tracer
-	logging *logrus.Logger
 }
 
 var jwtKey = []byte(os.Getenv("SECRET_KEY"))
 var verifier, _ = jwt.NewVerifierHS(jwt.HS256, jwtKey)
 
-func NewTweetHandler(service *application.TweetService, tracer trace.Tracer,  logging *logrus.Logger) *TweetHandler {
+func NewTweetHandler(service *application.TweetService, tracer trace.Tracer) *TweetHandler {
 	return &TweetHandler{
 		service: service,
 		tracer:  tracer,
-		logging: logging,
 	}
 }
 
@@ -68,8 +65,6 @@ func (handler *TweetHandler) GetAll(writer http.ResponseWriter, req *http.Reques
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.GetAll")
 	defer span.End()
 
-	handler.logging.Infoln("tweetHandler.GetAll : getAll endpoint reached")
-
 	tweets, err := handler.service.GetAll(ctx)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)
@@ -81,8 +76,6 @@ func (handler *TweetHandler) GetAll(writer http.ResponseWriter, req *http.Reques
 func (handler *TweetHandler) GetOne(writer http.ResponseWriter, req *http.Request) {
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.GetOne")
 	defer span.End()
-
-	handler.logging.Infoln("tweetHandler.Get : get endpoint reached")
 
 	vars := mux.Vars(req)
 	tweetID := vars["id"]
@@ -99,12 +92,9 @@ func (handler *TweetHandler) GetTweetsByUser(writer http.ResponseWriter, req *ht
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.GetTweetsByUser")
 	defer span.End()
 
-	handler.logging.Infoln("tweetHandler.TweetsByUser : TweetsByUser endpoint reached")
-
 	vars := mux.Vars(req)
 	username, ok := vars["username"]
 	if !ok {
-		handler.logging.Errorln("tweetHandler.TweetsByUser : bad username")
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -121,8 +111,6 @@ func (handler *TweetHandler) GetTweetsByUser(writer http.ResponseWriter, req *ht
 func (handler *TweetHandler) GetLikesByTweet(writer http.ResponseWriter, req *http.Request) {
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.GetLikesByTweet")
 	defer span.End()
-
-	handler.logging.Infoln("tweetHandler.likesByTweet : likesByTweet endpoint reached")
 
 	vars := mux.Vars(req)
 	tweetID, ok := vars["id"]
@@ -143,8 +131,6 @@ func (handler *TweetHandler) Favorite(writer http.ResponseWriter, req *http.Requ
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.Favorite")
 	defer span.End()
 
-	handler.logging.Infoln("tweetHandler.favorite : Favorite endpoint reached")
-
 	bearer := req.Header.Get("Authorization")
 	bearerToken := strings.Split(bearer, "Bearer ")
 	tokenString := bearerToken[1]
@@ -163,7 +149,6 @@ func (handler *TweetHandler) Favorite(writer http.ResponseWriter, req *http.Requ
 	var tweet domain.Tweet
 	err = json.NewDecoder(req.Body).Decode(&tweet)
 	if err != nil {
-		handler.logging.Errorln("tweetHandler.favorite : tweet bad body")
 		log.Println(err)
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
@@ -186,8 +171,6 @@ func (handler *TweetHandler) Post(writer http.ResponseWriter, req *http.Request)
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.Post")
 	defer span.End()
 
-	handler.logging.Infoln("tweetHandler.Post : post endpoint reached")
-
 	err := req.ParseMultipartForm(32 << 20)
 	if err != nil {
 		log.Println(err)
@@ -198,7 +181,6 @@ func (handler *TweetHandler) Post(writer http.ResponseWriter, req *http.Request)
 
 	if strs[0] != "multipart/form-data" {
 		log.Println("Invalid Content-Type")
-		handler.logging.Infoln("tweetHandler.post : image error")
 		http.Error(writer, "Invalid Content-Type", http.StatusBadRequest)
 		return
 	}
@@ -223,7 +205,6 @@ func (handler *TweetHandler) Post(writer http.ResponseWriter, req *http.Request)
 	var tweetVal domain.Tweet
 	err = json.Unmarshal([]byte(tweet), &tweetVal)
 	if err != nil {
-		handler.logging.Errorln("tweetHandler.post- unmarshal error")
 		log.Printf("Error in TweetHandler.Post unmarshal json 1")
 	}
 
@@ -231,12 +212,10 @@ func (handler *TweetHandler) Post(writer http.ResponseWriter, req *http.Request)
 	var tweetAdVal domain.AdTweet
 	err = json.Unmarshal([]byte(tweet), &tweetAdVal)
 	if err != nil {
-		handler.logging.Errorln("tweetHandler.post- unmarshal error")
 		log.Printf("Error in TweetHandler.Post unmarshal json 2")
 	}
 
 	if err != nil {
-		handler.logging.Errorln("tweetHandler.post- unmarshal error")
 		http.Error(writer, "bad json format", http.StatusBadRequest)
 
 	}
@@ -271,8 +250,6 @@ func (handler *TweetHandler) GetTweetImage(writer http.ResponseWriter, req *http
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.GetTweetImage")
 	defer span.End()
 
-	handler.logging.Infoln("tweetHandler.getTweetImage reached")
-
 	vars := mux.Vars(req)
 	id, ok := vars["id"]
 	if !ok {
@@ -306,8 +283,6 @@ func (handler *TweetHandler) GetFeedByUser(writer http.ResponseWriter, req *http
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.GetFeedByUser")
 	defer span.End()
 
-	handler.logging.Infoln("tweetHandler.getFeedByUser reached")
-
 	feed, err := handler.service.GetFeedByUser(ctx, req.Header.Get("Authorization"))
 	if err != nil {
 		log.Printf("error: %s", err.Error())
@@ -326,8 +301,6 @@ func (handler *TweetHandler) GetFeedByUser(writer http.ResponseWriter, req *http
 func (handler *TweetHandler) Retweet(writer http.ResponseWriter, req *http.Request) {
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.Retweet")
 	defer span.End()
-
-	handler.logging.Infoln("tweetHandler.retweet reached")
 
 	bearer := req.Header.Get("Authorization")
 	bearerToken := strings.Split(bearer, "Bearer ")
@@ -365,8 +338,6 @@ func (handler *TweetHandler) TimespentOnAd(writer http.ResponseWriter, req *http
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.TimespentOnAd")
 	defer span.End()
 
-	handler.logging.Infoln("tweetHandler.timeSpentOnAd reached")
-
 	var timespent domain.Timespent
 	err := json.NewDecoder(req.Body).Decode(&timespent)
 	if err != nil {
@@ -382,8 +353,6 @@ func (handler *TweetHandler) TimespentOnAd(writer http.ResponseWriter, req *http
 func (handler *TweetHandler) ViewProfileFromAdd(writer http.ResponseWriter, req *http.Request) {
 	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.ViewProfileFromAdd")
 	defer span.End()
-
-	handler.logging.Infoln("tweetHandler.ViewProfile reached")
 
 	var tweetID domain.TweetID
 	err := json.NewDecoder(req.Body).Decode(&tweetID)
