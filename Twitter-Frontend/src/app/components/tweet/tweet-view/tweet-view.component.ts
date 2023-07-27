@@ -67,68 +67,33 @@ export class TweetViewComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data: Tweet) => {
           this.tweet = data;
-          
+
           if(this.tweet.image) {
             this.tweetService.GetImageByTweet(this.tweet_id).subscribe(response => {
                 const fileReader = new FileReader();
                 fileReader.readAsDataURL(response);
                 fileReader.onload = () => {
                 this.imagePath = fileReader.result as string;
-            }  
+            }
           });
         }
         this.isThatMe()
         }
       });
-      
-      
-  }
 
-  GetReport(): void{
-
-    if(this.reportGroup.get('button')?.value == ""){
-      this.openSnackBar("Please select report type!", "OK")
-      return
-    }
-
-    let date = String(this.reportGroup.get('date')?.value);
-    let timestamp = new Date(date)
-
-    if (this.reportGroup.get('button')?.value == "monthly"){
-      timestamp.setDate(1) // ovo za monthly
-      timestamp.setHours(1,0,0)
-    }else{
-      timestamp.setHours(1,0,0) // ovo za daily
-    }
-
-
-    this.reportService.GetReport(this.tweet.id, timestamp.getTime()/1000, this.reportGroup.get('button')?.value).subscribe(
-      data => {
-        this.report = data
-      },
-      error => {
-        if (error.status == 500){
-            this.openSnackBar("This advertisement doesn't have report for that date! Try another one.", "OK")
-        }
-        this.report.like_count = 0;
-        this.report.unlike_count = 0;
-        this.report.time_spent = 0;
-        this.report.view_count = 0;
-      }
-    )
 
   }
 
   ngOnDestroy(): void {
     this.endTime = performance.now();
     let seconds = Math.round((this.endTime - this.startTime) / 1000);
-    
+
     console.log(seconds);
-    
+
     if (this.tweet.advertisement) {
         let timespent = new TimespentDTO();
         timespent.tweet_id = this.tweet_id;
-        timespent.timespent = seconds; 
+        timespent.timespent = seconds;
         this.tweetService.TimespentOnAd(timespent).subscribe();
     }
   }
@@ -153,7 +118,7 @@ export class TweetViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  
+
   likeTweet(tweet: Tweet) {
 
     this.tweetID.id = tweet.id

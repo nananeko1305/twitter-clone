@@ -11,23 +11,23 @@
       </mat-card-title>
       <mat-card-subtitle class="tweet-text">{{tweet.text}}</mat-card-subtitle>
       <img class="tweet-image" mat-card-image alt="twitter-logo-view" *ngIf="this.tweet.image" [src]="imagePath" [routerLink]="['/View-Tweet', tweet.id]">
-  
+
       <mat-card-actions>
         <button *ngIf="isLiked" (click)="likeTweet(tweet)" mat-icon-button color="warn">
           <mat-icon class="favorite-icon">favorite</mat-icon>
         </button>
-  
+
         <button *ngIf="!isLiked" (click)="likeTweet(tweet)" mat-icon-button color="warn">
           <mat-icon class="favorite-icon">favorite_border</mat-icon>
         </button>
-  
+
         <b class="total-likes">{{tweet.favorite_count}}</b>
         <button mat-icon-button color="warn" class="who-liked" (click)="openDialog()">Likes</button>
-  
+
         <button *ngIf="isRetweeted && tweet.owner_username == ''" (click)="retweet(tweet)" mat-icon-button>
           <mat-icon class="star-icon">star</mat-icon>
         </button>
-  
+
         <button *ngIf="!isRetweeted && tweet.owner_username == ''" (click)="retweet(tweet)" mat-icon-button>
           <mat-icon class="star-icon">star_border</mat-icon>
         </button>
@@ -35,30 +35,3 @@
     </mat-card>
 </div>
 
-<div>
-  <mat-card class="report" *ngIf="isAnAd() && isThatMeLoggedIn">
-    <mat-card-title class="report-title">Advertisement Report</mat-card-title>
-    <mat-card>
-      <form [formGroup]="reportGroup">
-        <input [matDatepicker]="picker" formControlName="date">
-        <mat-datepicker-toggle [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-        <input name="button" type="radio" class="with-gap" style="margin-left: 15px;" formControlName="button" value="daily"/>
-        <label style="margin-left: 5px; font-size: 16px;">Daily</label>
-        <input name="button" type="radio" class="with-gap" style="margin-left: 15px;" formControlName="button" value="monthly"/>
-        <label style="margin-left: 5px; font-size: 16px;">Monthly</label>
-        <button class="btn btn-primary" style="margin-left: 5px; font-size: 12px;" (click)="GetReport()">Generate</button>
-      </form>
-    </mat-card>
-    <mat-card *ngIf="report.like_count != 0 || report.unlike_count != 0 || report.view_count != 0 || report.time_spent != 0">
-
-      <label>Like count: <b>{{report.like_count}}</b> </label> <br>
-      <label>Unlike count: <b>{{report.unlike_count}}</b> </label> <br>
-      <label>View profile count: <b>{{report.view_count}}</b> </label> <br>
-      <label>Average time spent on this advertisement: <b>{{report.time_spent}}</b> </label> <br>
-
-
-    </mat-card>
-
-  </mat-card>
-</div>

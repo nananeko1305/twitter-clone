@@ -57,7 +57,7 @@ export class UserProfileComponent implements OnInit {
         if (data != null){
           this.followings = data
         }
-        
+
       }
     )
 
@@ -66,7 +66,7 @@ export class UserProfileComponent implements OnInit {
         if (data != null) {
           this.followers = data
         }
-        
+
       }
     )
 
@@ -92,19 +92,6 @@ export class UserProfileComponent implements OnInit {
       }
       });
   }
-
-  isThatMe(): boolean {
-    if (this.user.username == this.loggedInUser.username) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  // isPrivate(): boolean {
-  //   console.log("Privacy is " + this.user.privacy)
-  //   return this.user.privacy
-  // }
 
   SendRequest(user: User){
     var followReq = new FollowRequest()

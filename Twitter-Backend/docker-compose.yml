@@ -37,7 +37,7 @@ services:
         condition: service_started
     networks:
       - network
-    mem_limit: 128mb
+    mem_limit: 50mb
 
   user_service:
     image: user_service
@@ -66,7 +66,7 @@ services:
       - auth_service
     networks:
       - network
-    mem_limit: 128mb
+    mem_limit: 50mb
 
   auth_service:
     image: auth_service
@@ -100,7 +100,7 @@ services:
       - nats
     networks:
       - network
-    mem_limit: 128mb
+    mem_limit: 50mb
 
   follow_service:
     image: follow_service
@@ -131,39 +131,7 @@ services:
       - user_service
     networks:
       - network
-    mem_limit: 128mb
-
-  report_service:
-    image: report_service
-    container_name: report_service
-    build:
-      context: .
-      dockerfile: ./report_service/Dockerfile
-    restart: always
-    ports:
-      - ${REPORT_SERVICE_PORT}:${REPORT_SERVICE_PORT}
-    environment:
-      EVENT_DB: ${EVENT_DB}
-      REPORT_DB_HOST: ${REPORT_DB_HOST}
-      REPORT_DB_PORT: ${REPORT_DB_PORT}
-      REPORT_SERVICE_PORT: ${REPORT_SERVICE_PORT}
-      SECRET_KEY: ${SECRET_KEY}
-      NATS_HOST: ${NATS_HOST}
-      NATS_PORT: ${NATS_PORT}
-      NATS_USER: ${NATS_USER}
-      NATS_PASS: ${NATS_PASS}
-      CREATE_REPORT_COMMAND_SUBJECT: ${CREATE_REPORT_COMMAND_SUBJECT}
-      CREATE_REPORT_REPLY_SUBJECT: ${CREATE_REPORT_REPLY_SUBJECT}
-    depends_on:
-      report_db:
-        condition: service_started
-      nats:
-        condition: service_started
-      event_db:
-        condition: service_healthy
-    networks:
-      - network
-    mem_limit: 128mb
+    mem_limit: 50mb
 
   tweet_report_service:
     build:
@@ -177,7 +145,7 @@ services:
     restart: always
     networks:
       - network
-    mem_limit: 128mb
+    mem_limit: 50mb
 
 
   api_gateway:
@@ -195,7 +163,7 @@ services:
       - follow_service
     networks:
       - network
-    mem_limit: 128mb
+    mem_limit: 50mb
 
   tweet_db:
     image: cassandra
@@ -215,27 +183,6 @@ services:
       - network
     mem_limit: 5gb
 
-  event_db:
-    image: cassandra
-    container_name: event_db
-    restart: on-failure
-    ports:
-      - "9043:9043"
-    environment:
-      - CASSANDRA_START_RPC=true
-      - CASSANDRA_NATIVE_TRANSPORT_PORT=9042
-    # Docker healthcheck - checks if database is "alive"
-    healthcheck:
-      test: [ "CMD-SHELL", "cqlsh -e 'describe cluster'" ]
-      interval: 5s
-      timeout: 5s
-      retries: 15
-    volumes:
-      - event_store:/var/lib/cassandra/data
-    networks:
-      - network
-    mem_limit: 5gb
-
 
   user_db:
     image: mongo
@@ -245,7 +192,7 @@ services:
       - network
     volumes:
       - user_db:/data/db
-    mem_limit: 128mb
+    mem_limit: 50mb
 
 
   auth_db:
@@ -256,18 +203,7 @@ services:
       - network
     volumes:
       - auth_db:/data/db
-    mem_limit: 128mb
-
-  report_db:
-    image: mongo
-    container_name: report_db
-    restart: always
-    networks:
-      - network
-    volumes:
-      - report_db:/data/db
-    mem_limit: 128mb
-
+    mem_limit: 50mb
 
   follow_db:
     image: neo4j
@@ -312,7 +248,7 @@ services:
       - network
     volumes:
       - auth_cache:/data
-    mem_limit: 128mb
+    mem_limit: 50mb
 
   redis_db:
     image: redis
@@ -327,7 +263,7 @@ services:
       - redis_data:/data
     networks:
       - network
-    mem_limit: 128mb
+    mem_limit: 50mb
 
   nats:
     image: nats
@@ -335,7 +271,7 @@ services:
     restart: on-failure
     networks:
       - network
-    mem_limit: 128mb
+    mem_limit: 50mb
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -344,7 +280,7 @@ services:
       - "16686:16686"
     networks:
       - network
-    mem_limit: 128mb
+    mem_limit: 50mb
 
   collector:
     image: otel/opentelemetry-collector:latest
@@ -353,7 +289,7 @@ services:
       - ./api_gateway/otel-collector-config.yaml:/etc/otel-collector-config.yaml
     networks:
       - network
-    mem_limit: 128mb
+    mem_limit: 50mb
 
 volumes:
   cassandra_store:

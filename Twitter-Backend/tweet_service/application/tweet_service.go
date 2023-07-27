@@ -22,20 +22,18 @@ var (
 )
 
 type TweetService struct {
-	store        domain.TweetStore
-	tracer       trace.Tracer
-	cache        domain.TweetCache
-	cb           *gobreaker.CircuitBreaker
-	orchestrator *CreateEventOrchestrator
+	store  domain.TweetStore
+	tracer trace.Tracer
+	cache  domain.TweetCache
+	cb     *gobreaker.CircuitBreaker
 }
 
-func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, orchestrator *CreateEventOrchestrator) *TweetService {
+func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer) *TweetService {
 	return &TweetService{
-		store:        store,
-		cache:        cache,
-		cb:           CircuitBreaker(),
-		orchestrator: orchestrator,
-		tracer:       tracer,
+		store:  store,
+		cache:  cache,
+		cb:     CircuitBreaker(),
+		tracer: tracer,
 	}
 }
 
@@ -185,33 +183,12 @@ func (service *TweetService) Favorite(ctx context.Context, id string, username s
 		} else {
 			event.Type = "Liked"
 		}
-		log.Println(event.Timestamp)
-		err = service.orchestrator.Start(ctx, event)
 		if err != nil {
 			return status, err
 		}
 	}
 
 	return status, nil
-}
-
-func (service *TweetService) TimeSpentOnAd(ctx context.Context, timespent *domain.Timespent) error {
-	ctx, span := service.tracer.Start(ctx, "TweetService.TimeSpentOnAd")
-	defer span.End()
-
-	event := events.Event{
-		TweetID:   timespent.TweetID,
-		Type:      "Timespent",
-		Timestamp: time.Now().Unix(),
-		Timespent: timespent.Timespent,
-	}
-
-	err := service.orchestrator.Start(ctx, event)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (service *TweetService) GetTweetImage(ctx context.Context, id string) (*[]byte, error) {
@@ -235,25 +212,6 @@ func (service *TweetService) GetTweetImage(ctx context.Context, id string) (*[]b
 		return nil, err
 	}
 	return &image, nil
-}
-
-func (service *TweetService) ViewProfileFromAd(ctx context.Context, tweetID domain.TweetID) error {
-	ctx, span := service.tracer.Start(ctx, "TweetService.ViewProfileFromAd")
-	defer span.End()
-
-	event := events.Event{
-		TweetID:   tweetID.ID,
-		Type:      "ViewCount",
-		Timestamp: time.Now().Unix(),
-		Timespent: 0,
-	}
-
-	err := service.orchestrator.Start(ctx, event)
-	if err != nil {
-		return err
-	}
-	return nil
-
 }
 
 func (service *TweetService) Retweet(ctx context.Context, id string, username string) (int, error) {

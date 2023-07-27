@@ -20,7 +20,6 @@ import (
 	"syscall"
 	"time"
 	"tweet_service/application"
-	application2 "tweet_service/application"
 	"tweet_service/domain"
 	"tweet_service/handlers"
 	"tweet_service/startup/config"
@@ -66,21 +65,15 @@ func (server *Server) Start() {
 	defer tweetStore.CloseSession()
 	tweetStore.CreateTables()
 
-	//orchestrator
-	commandPublisher := server.initPublisher(server.config.CreateReportCommandSubject)
-	replySubscriber := server.initSubscriber(server.config.CreateReportReplySubject, QueueGroup)
-
-	createReportOrchestrator := server.initCreateEventOrchestrator(commandPublisher, replySubscriber, tracer)
-
-	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, createReportOrchestrator)
+	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer)
 
 	tweetHandler := server.initTweetHandler(tweetService, tracer)
 
 	server.start(tweetHandler)
 }
 
-func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, orchestrator *application2.CreateEventOrchestrator) *application.TweetService {
-	service := application.NewTweetService(&store, cache, tracer, orchestrator)
+func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer) *application.TweetService {
+	service := application.NewTweetService(&store, cache, tracer)
 	return service
 }
 
@@ -119,14 +112,6 @@ func (server *Server) initSubscriber(subject string, queueGroup string) saga.Sub
 		log.Fatal(err)
 	}
 	return subscriber
-}
-
-func (server *Server) initCreateEventOrchestrator(publisher saga.Publisher, subscriber saga.Subscriber, tracer trace.Tracer) *application.CreateEventOrchestrator {
-	orchestrator, err := application.NewCreateEventOrchestrator(publisher, subscriber, tracer)
-	if err != nil {
-		log.Fatalf("Error in server of report_service, line 182: %s", err.Error())
-	}
-	return orchestrator
 }
 
 func (server *Server) start(tweetHandler *handlers.TweetHandler) {
