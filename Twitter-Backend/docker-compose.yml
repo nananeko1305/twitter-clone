@@ -177,8 +177,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 15
-    volumes:
-      - cassandra_store:/var/lib/cassandra/data
     networks:
       - network
     mem_limit: 5gb
@@ -190,10 +188,15 @@ services:
     restart: on-failure
     networks:
       - network
-    volumes:
-      - user_db:/data/db
-    mem_limit: 50mb
+    mem_limit: 500mb
 
+  tweet_report_db:
+    image: mongo
+    container_name: tweet_report_db
+    restart: on-failure
+    networks:
+      - network
+    mem_limit: 500mb
 
   auth_db:
     image: mongo
@@ -201,9 +204,7 @@ services:
     restart: always
     networks:
       - network
-    volumes:
-      - auth_db:/data/db
-    mem_limit: 50mb
+    mem_limit: 500mb
 
   follow_db:
     image: neo4j
@@ -231,8 +232,6 @@ services:
       - NEO4J_AUTH=neo4j/twitter123
     networks:
       - network
-    volumes:
-      - neo4j_data:/data
     mem_limit: 700mb
 
   auth_cache:
@@ -246,8 +245,6 @@ services:
     command: redis-server --save 20 1 --loglevel warning
     networks:
       - network
-    volumes:
-      - auth_cache:/data
     mem_limit: 50mb
 
   redis_db:
@@ -259,8 +256,6 @@ services:
     ports:
       - ${TWEET_CACHE_PORT}:${TWEET_CACHE_PORT}
     command: --port 6380
-    volumes:
-      - redis_data:/data
     networks:
       - network
     mem_limit: 50mb

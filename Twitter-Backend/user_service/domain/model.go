@@ -32,4 +32,5 @@ type UserType string
 const (
 	Regular  = "Regular"
 	Business = "Business"
+	Admin    = "Admin"
 )

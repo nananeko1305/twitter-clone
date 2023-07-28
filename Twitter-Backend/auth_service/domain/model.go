@@ -38,6 +38,7 @@ type UserType string
 const (
 	Regular  = "Regular"
 	Business = "Business"
+	Admin    = "Admin"
 )
 
 type Credentials struct {

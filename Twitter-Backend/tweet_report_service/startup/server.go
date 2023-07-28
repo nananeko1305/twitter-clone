@@ -5,7 +5,10 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"tweet_report_service/configs"
 	"tweet_report_service/controller"
+	"tweet_report_service/repository/implementation"
+	"tweet_report_service/service"
 	"tweet_report_service/startup/config"
 )
 
@@ -21,9 +24,14 @@ func NewServer(config *config.Config) *Server {
 
 func (server *Server) Start() {
 
-	httpHandler := controller.NewTweetReportController()
+	mongoClient := configs.ConnectToMongoDB(server.config.DBHost, server.config.ServicePort)
+
+	tweetReportRepository := implementation.NewTweetReportRepositoryImpl(mongoClient)
+	tweetReportService := service.NewTweetReportService(&tweetReportRepository)
+	tweetReportController := controller.NewTweetReportController(tweetReportService)
+
 	router := mux.NewRouter()
-	httpHandler.InitRoutes(router)
+	tweetReportController.InitRoutes(router)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", server.config.ServicePort),

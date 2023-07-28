@@ -38,8 +38,10 @@ func (o *CreateUserOrchestrator) Start(ctx context.Context, user *domain.User) e
 
 	if user.UserType == "Regular" {
 		userType = "Regular"
-	} else {
+	} else if user.UserType == "Business" {
 		userType = "Business"
+	} else if user.UserType == "Admin" {
+		userType = "Admin"
 	}
 
 	user1 := events.User{

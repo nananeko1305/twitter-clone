@@ -53,7 +53,6 @@ func (service *AuthService) GetAll(ctx context.Context) ([]*domain.Credentials, 
 func (service *AuthService) Register(ctx context.Context, user *domain.User) (string, int, error) {
 
 	isUsernameExists, err := checkBlackList(user.Password)
-	log.Println(isUsernameExists)
 
 	if isUsernameExists {
 		return "", 55, fmt.Errorf("Password not acceptable, try another one!")
@@ -491,6 +490,11 @@ func (service *AuthService) DomainToUser(userIn *domain.User) create_user.User {
 }
 
 func validateUserType(user *domain.User) (*domain.User, error) {
+
+	if user.UserType == domain.Admin {
+		user.UserType = domain.Admin
+		return user, nil
+	}
 
 	business := isBusiness(user)
 	regular := isRegular(user)

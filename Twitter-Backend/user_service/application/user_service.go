@@ -72,8 +72,10 @@ func (service *UserService) Register(ctx context.Context, user *domain.User) (*d
 	}
 	if validatedUser.UserType == "Business" {
 		validatedUser.Privacy = false
-	} else {
+	} else if validatedUser.UserType == "Regular" {
 		validatedUser.Privacy = true
+	} else {
+		validatedUser.Privacy = false
 	}
 
 	retUser, err := service.store.Post(ctx, validatedUser)
@@ -120,6 +122,11 @@ func (service *UserService) DeleteUserByID(ctx context.Context, id primitive.Obj
 }
 
 func validateUserType(user *domain.User) (*domain.User, error) {
+
+	if user.UserType == domain.Admin {
+		user.UserType = domain.Admin
+		return user, nil
+	}
 
 	business := isBusiness(user)
 	regular := isRegular(user)
@@ -177,8 +184,10 @@ func (service *UserService) UserToDomain(userIn create_user.User) domain.User {
 	user.Username = userIn.Username
 	if userIn.UserType == "Regular" {
 		user.UserType = "Regular"
-	} else {
+	} else if userIn.UserType == "Business" {
 		user.UserType = "Business"
+	} else {
+		user.UserType = "Admin"
 	}
 	user.Privacy = userIn.Visibility
 	user.CompanyName = userIn.CompanyName

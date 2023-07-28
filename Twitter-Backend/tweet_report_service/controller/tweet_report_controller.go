@@ -5,13 +5,17 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"tweet_report_service/service"
 )
 
 type TweetReportController struct {
+	tweetReportService *service.TweetReportService
 }
 
-func NewTweetReportController() *TweetReportController {
-	return &TweetReportController{}
+func NewTweetReportController(tweetReportService *service.TweetReportService) *TweetReportController {
+	return &TweetReportController{
+		tweetReportService: tweetReportService,
+	}
 }
 
 func (controller *TweetReportController) InitRoutes(router *mux.Router) {
