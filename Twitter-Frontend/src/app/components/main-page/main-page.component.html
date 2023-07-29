@@ -6,12 +6,12 @@
 
 </div>
 
-<div class="row">
-    <div class="col-7 col-lg-8">
+<div class="row" style="margin-left: 10%; margin-right: auto;">
+    <div class="col-9">
         <app-tweet-list *ngIf="tweets.length > 0" [tweets]="tweets"></app-tweet-list>
     </div>
-    <div class="col-5 col-lg-4">
-        <mat-card class="people-suggestions-card">
+    <div class="col-3">
+        <mat-card class="people-suggestions-card" style="margin-right: auto; margin-left: auto">
             <mat-card-title class="people-suggestions-title">People you may know</mat-card-title>
             <mat-card-content *ngFor="let name of recommendations">
                 <mat-card-header class="people-suggestions-header" (click)="OpenProfile(name)"  style="cursor: pointer;">{{name}}</mat-card-header>
