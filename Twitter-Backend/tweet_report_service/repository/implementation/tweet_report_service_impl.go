@@ -57,8 +57,12 @@ func (repository TweetReportRepositoryImpl) Post(report domain.TweetReport) erro
 }
 
 func (repository TweetReportRepositoryImpl) Delete(id primitive.ObjectID) error {
-	//TODO implement me
-	panic("implement me")
+
+	_, err := repository.reports.DeleteOne(context.Background(), bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (repository TweetReportRepositoryImpl) IsReportedByUser(report domain.TweetReport) error {

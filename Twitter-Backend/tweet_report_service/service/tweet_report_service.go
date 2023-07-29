@@ -51,13 +51,19 @@ func (service *TweetReportService) Post(report domain.TweetReport) error {
 
 }
 
-func (service *TweetReportService) Delete() ([]*domain.TweetReport, error) {
+func (service *TweetReportService) Delete(id string) error {
 
-	reports, err := service.repository.Get()
+	primitiveID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		log.Println("Error in database: ", err)
-		return nil, err
+		log.Println("Error in converting from string to primitiveObjectID: ", err)
+		return err
 	}
 
-	return reports, nil
+	err = service.repository.Delete(primitiveID)
+	if err != nil {
+		log.Println("Error in database: ", err)
+		return err
+	}
+
+	return nil
 }

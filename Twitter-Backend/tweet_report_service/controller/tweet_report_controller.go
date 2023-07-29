@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -64,7 +63,14 @@ func (controller *TweetReportController) Post(response http.ResponseWriter, requ
 }
 
 func (controller *TweetReportController) Delete(response http.ResponseWriter, request *http.Request) {
-	fmt.Println("Hello world")
+
+	id := mux.Vars(request)["id"]
+	err := controller.tweetReportService.Delete(id)
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(err.Error()))
+		return
+	}
 
 	response.WriteHeader(http.StatusOK)
 }
