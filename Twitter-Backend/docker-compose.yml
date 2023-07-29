@@ -140,6 +140,8 @@ services:
     container_name: tweet_report_service
     environment:
       TWEET_REPORT_SERVICE_PORT : ${TWEET_REPORT_SERVICE_PORT}
+      TWEET_REPORT_DB_HOST : ${TWEET_REPORT_DB_HOST}
+      TWEET_REPORT_DB_PORT : ${TWEET_REPORT_DB_PORT}
     ports:
       - ${TWEET_REPORT_SERVICE_PORT}:${TWEET_REPORT_SERVICE_PORT}
     restart: always

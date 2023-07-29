@@ -6,7 +6,8 @@ import (
 )
 
 type TweetReportRepository interface {
-	Create(report domain.TweetReport) error
-	Read(report domain.TweetReport) error
+	Post(report domain.TweetReport) error
+	Get() ([]*domain.TweetReport, error)
 	Delete(id primitive.ObjectID) error
+	IsReportedByUser(report domain.TweetReport) error
 }

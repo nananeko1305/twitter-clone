@@ -1,6 +1,8 @@
 package implementation
 
 import (
+	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"tweet_report_service/domain"
@@ -25,17 +27,50 @@ func NewTweetReportRepositoryImpl(client *mongo.Client) repository.TweetReportRe
 
 }
 
-func (t TweetReportRepositoryImpl) Create(report domain.TweetReport) error {
+func (repository TweetReportRepositoryImpl) Get() ([]*domain.TweetReport, error) {
+
+	find, err := repository.reports.Find(context.Background(), bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	var reports []*domain.TweetReport
+
+	for find.Next(context.Background()) {
+		var report *domain.TweetReport
+		err := find.Decode(&report)
+		if err != nil {
+			return nil, err
+		}
+		reports = append(reports, report)
+	}
+
+	return reports, nil
+}
+
+func (repository TweetReportRepositoryImpl) Post(report domain.TweetReport) error {
+	_, err := repository.reports.InsertOne(context.Background(), report)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repository TweetReportRepositoryImpl) Delete(id primitive.ObjectID) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (t TweetReportRepositoryImpl) Read(report domain.TweetReport) error {
-	//TODO implement me
-	panic("implement me")
-}
+func (repository TweetReportRepositoryImpl) IsReportedByUser(report domain.TweetReport) error {
 
-func (t TweetReportRepositoryImpl) Delete(id primitive.ObjectID) error {
-	//TODO implement me
-	panic("implement me")
+	filter := bson.M{"username": report.Username, "tweetID": report.TweetID}
+
+	result := repository.reports.FindOne(context.Background(), filter)
+
+	err := result.Decode(&report)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

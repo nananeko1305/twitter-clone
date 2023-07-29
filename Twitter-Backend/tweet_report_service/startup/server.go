@@ -24,10 +24,10 @@ func NewServer(config *config.Config) *Server {
 
 func (server *Server) Start() {
 
-	mongoClient := configs.ConnectToMongoDB(server.config.DBHost, server.config.ServicePort)
+	mongoClient := configs.ConnectToMongoDB(server.config.DBHost, server.config.DBPort)
 
 	tweetReportRepository := implementation.NewTweetReportRepositoryImpl(mongoClient)
-	tweetReportService := service.NewTweetReportService(&tweetReportRepository)
+	tweetReportService := service.NewTweetReportService(tweetReportRepository)
 	tweetReportController := controller.NewTweetReportController(tweetReportService)
 
 	router := mux.NewRouter()
