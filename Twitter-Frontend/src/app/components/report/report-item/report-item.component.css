@@ -1,0 +1,56 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+}
+
+.container {
+  max-width: 600px;
+  margin: 20px auto;
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
+h1 {
+  color: #007bff;
+  text-align: center;
+}
+
+.report-card {
+  border-top: 1px solid #007bff;
+  margin-top: 20px;
+  padding-top: 10px;
+}
+
+.report-attribute {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.attribute-name {
+  flex: 1;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.attribute-value {
+  flex: 3;
+  padding-left: 10px;
+  color: #333;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn-accept {
+  margin-right: 10px;
+}
+
+

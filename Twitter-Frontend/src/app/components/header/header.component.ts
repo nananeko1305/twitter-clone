@@ -1,27 +1,31 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import { Router } from '@angular/router';
+import {StorageService} from "../../services/storage.service";
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit{
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    public storageService: StorageService
+  ) { }
+
+
+  ngOnInit() {
+    this.storageService.getRoleFromToken()
+  }
 
   isLoggedIn(): boolean {
-    if (localStorage.getItem("authToken") != null) {
-      return true;
-    }
-    else {
-      return false;
-    }
+    return localStorage.getItem("authToken") != null;
   }
 
   logout() {
     localStorage.clear();
-    this.router.navigate(['/Login']);
+    this.router.navigate(['/Login']).then();
   }
 
 }

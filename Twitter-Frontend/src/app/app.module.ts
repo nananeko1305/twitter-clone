@@ -44,6 +44,9 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { FollowComponentDialogComponent } from './components/follow-component-dialog/follow-component-dialog.component';
 import { FollowingComponentDialogComponent } from './components/following-component-dialog/following-component-dialog.component';
+import { ReportDialogComponent } from './components/report-dialog/report-dialog.component';
+import { ReportListComponent } from './components/report/report-list/report-list.component';
+import { ReportItemComponent } from './components/report/report-item/report-item.component';
 
 
 @NgModule({
@@ -72,7 +75,10 @@ import { FollowingComponentDialogComponent } from './components/following-compon
     FollowRequestListComponent,
     TweetLikesDialogComponent,
     FollowComponentDialogComponent,
-    FollowingComponentDialogComponent
+    FollowingComponentDialogComponent,
+    ReportDialogComponent,
+    ReportListComponent,
+    ReportItemComponent,
   ],
   imports: [
     BrowserModule,

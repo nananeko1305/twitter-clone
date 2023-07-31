@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
+	nats2 "github.com/nats-io/nats.go"
 	saga "github.com/zjalicf/twitter-clone-common/common/saga/messaging"
 	"github.com/zjalicf/twitter-clone-common/common/saga/messaging/nats"
 	"go.opentelemetry.io/otel"
@@ -20,6 +21,7 @@ import (
 	"syscall"
 	"time"
 	"tweet_service/application"
+	"tweet_service/configs"
 	"tweet_service/domain"
 	"tweet_service/handlers"
 	"tweet_service/startup/config"
@@ -45,6 +47,9 @@ func (server *Server) Start() {
 
 	cfg := config.NewConfig()
 
+	//nats connection
+	natsConnection := configs.ConnectToNats(cfg)
+
 	ctx := context.Background()
 	exp, err := newExporter(cfg.JaegerAddress)
 	if err != nil {
@@ -65,15 +70,16 @@ func (server *Server) Start() {
 	defer tweetStore.CloseSession()
 	tweetStore.CreateTables()
 
-	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer)
+	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection)
+	tweetService.SubscribeToNats(natsConnection)
 
 	tweetHandler := server.initTweetHandler(tweetService, tracer)
 
 	server.start(tweetHandler)
 }
 
-func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer) *application.TweetService {
-	service := application.NewTweetService(&store, cache, tracer)
+func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats2.Conn) *application.TweetService {
+	service := application.NewTweetService(&store, cache, tracer, natsConnection)
 	return service
 }
 

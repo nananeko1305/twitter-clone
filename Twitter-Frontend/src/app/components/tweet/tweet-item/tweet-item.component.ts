@@ -8,7 +8,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { TweetLikesDialogComponent } from '../tweet-likes-dialog/tweet-likes-dialog.component';
 import { Favorite } from 'src/app/models/favorite.model';
 import { FollowService } from 'src/app/services/follow.service';
+import {ReportDialogComponent} from "../../report-dialog/report-dialog.component";
 
+export interface DialogData {
+    username: string,
+    tweetID: string
+}
 @Component({
   selector: 'app-tweet-item',
   templateUrl: './tweet-item.component.html',
@@ -41,7 +46,7 @@ export class TweetItemComponent implements OnInit {
   ngOnInit(): void {
     this.isThatMe()
     this.totalLikes = this.tweet.favorite_count;
-    
+
     if(this.tweet.owner_username != ''){
       this.followService.IsFollowExist(this.tweet.owner_username).subscribe(response => {
         this.isFollowingOwner = response;
@@ -82,7 +87,6 @@ export class TweetItemComponent implements OnInit {
     this.userService.GetMe()
       .subscribe({
         next: (data: User) => {
-          console.log(data)
           this.loggedInUser = data;
           if (this.tweet.username === this.loggedInUser.username || this.tweet.owner_username === this.loggedInUser.username) {
             this.isThatMeLoggedIn = true;
@@ -164,7 +168,17 @@ export class TweetItemComponent implements OnInit {
     });
   }
 
+  openReportDialog(): void {
+
+   const dialogRef = this.dialog.open(ReportDialogComponent, {
+      width: '25%',
+       data: {username: this.loggedInUser.username, tweetID: this.tweet.id}
+    })
+  }
+
   handleClick() {
     console.log(event)
   }
 }
+
+

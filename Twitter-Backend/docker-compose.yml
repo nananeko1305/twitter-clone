@@ -26,6 +26,8 @@ services:
       TWEET_CACHE_PORT: ${TWEET_CACHE_PORT}
       CREATE_REPORT_COMMAND_SUBJECT: ${CREATE_REPORT_COMMAND_SUBJECT}
       CREATE_REPORT_REPLY_SUBJECT: ${CREATE_REPORT_REPLY_SUBJECT}
+      NATS_URI: ${NATS_URI}
+      DELETE_TWEET : ${DELETE_TWEET}
     depends_on:
       jaeger:
         condition: service_started
@@ -92,8 +94,10 @@ services:
       NATS_PORT: ${NATS_PORT}
       NATS_USER: ${NATS_USER}
       NATS_PASS: ${NATS_PASS}
+      NATS_URI: ${NATS_URI}
       CREATE_USER_COMMAND_SUBJECT: ${CREATE_USER_COMMAND_SUBJECT}
       CREATE_USER_REPLY_SUBJECT: ${CREATE_USER_REPLY_SUBJECT}
+      DELETE_TWEET : ${DELETE_TWEET}
     depends_on:
       - auth_db
       - auth_cache
@@ -142,6 +146,8 @@ services:
       TWEET_REPORT_SERVICE_PORT : ${TWEET_REPORT_SERVICE_PORT}
       TWEET_REPORT_DB_HOST : ${TWEET_REPORT_DB_HOST}
       TWEET_REPORT_DB_PORT : ${TWEET_REPORT_DB_PORT}
+      DELETE_TWEET : ${DELETE_TWEET}
+      NATS_URI: ${NATS_URI}
     ports:
       - ${TWEET_REPORT_SERVICE_PORT}:${TWEET_REPORT_SERVICE_PORT}
     restart: always
@@ -268,7 +274,7 @@ services:
     restart: on-failure
     networks:
       - network
-    mem_limit: 50mb
+    mem_limit: 500mb
 
   jaeger:
     image: jaegertracing/all-in-one:latest

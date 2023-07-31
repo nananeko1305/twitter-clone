@@ -45,14 +45,13 @@ export class MainPageComponent implements OnInit {
             .subscribe({
               next: (data) => {
                 this.recommendations = data;
-                console.log(this.recommendations);
               },
               error: (error) => {
                 this.openSnackBar("The service is currently unavailable. Try again later.", "")
                 console.log(error);
               }
             });
-            
+
           this.tweetService.GetHomeFeed()
             .subscribe({
               next: (data) => {
@@ -61,7 +60,6 @@ export class MainPageComponent implements OnInit {
                 }
 
                 if(data.ads != null){
-                  console.log("ads " + data.ads)
                   this.ads = data.ads;
                   this.dataLoaded = true;
                 }
@@ -71,8 +69,8 @@ export class MainPageComponent implements OnInit {
                 console.log(error);
               }
             });
-          
-          
+
+
         }
       });
   }

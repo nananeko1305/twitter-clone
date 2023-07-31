@@ -17,6 +17,7 @@ import { UserProfileComponent } from './components/user-profile/user-profile.com
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { FollowRequestsComponent } from './components/my-follow-requests/follow-requests.component';
 import { TweetViewComponent } from './components/tweet/tweet-view/tweet-view.component';
+import {ReportListComponent} from "./components/report/report-list/report-list.component";
 
 const routes: Routes = [
   {
@@ -86,6 +87,16 @@ const routes: Routes = [
     component: TweetViewComponent,
     canActivate: [AuthGuard]
   },
+  {
+    path: 'Reports',
+    component: ReportListComponent,
+    canActivate: [AuthGuard]
+  },
+  // {
+  //   path: 'Reports/:id',
+  //   component: TweetViewComponent,
+  //   canActivate: [AuthGuard]
+  // },
   {
     path: '404',
     component: NotFoundComponent

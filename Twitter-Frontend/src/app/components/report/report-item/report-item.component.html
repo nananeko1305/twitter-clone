@@ -1,0 +1,26 @@
+<div class="container">
+  <h1>Report by {{this.report.username}}</h1>
+  <div class="report-card">
+    <div class="report-attribute">
+      <span class="attribute-name">Tweet ID:</span>
+      <span class="attribute-value">{{ this.report.tweetID }}</span>
+    </div>
+    <div class="report-attribute">
+      <span class="attribute-name">Tweet Text:</span>
+      <span class="attribute-value">{{ this.tweet.text }}</span>
+    </div>
+    <div class="report-attribute">
+      <span class="attribute-name">Posted by:</span>
+      <span class="attribute-value">{{ this.tweet.username }}</span>
+    </div>
+    <div class="report-attribute">
+      <span class="attribute-name">Reason:</span>
+      <span class="attribute-value">{{ this.report.reason }}</span>
+    </div>
+    <div class="buttons">
+      <button class="btn btn-success btn-accept" (click)="changeStatus(this.report,'ACCEPTED')">Accept</button>
+      <button class="btn btn-danger" (click)="changeStatus(this.report,'DECLINED')">Decline</button>
+    </div>
+  </div>
+</div>
+

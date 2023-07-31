@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { LoginDTO } from 'src/app/dto/loginDTO';
 import { AuthService } from 'src/app/services/auth.service';
 import { VerificationService } from 'src/app/services/verify.service';
+import {StorageService} from "../../services/storage.service";
 
 @Component({
   selector: 'app-login',
@@ -23,7 +24,8 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private formBuilder: FormBuilder,
     private verificationService: VerificationService,
-    private _snackBar: MatSnackBar
+    private _snackBar: MatSnackBar,
+    private storageService: StorageService
   ) { }
 
   submitted = false;
@@ -56,6 +58,10 @@ export class LoginComponent implements OnInit {
       .subscribe({
         next: (token: string) => {
           localStorage.setItem('authToken', token);
+          if (this.storageService.getRoleFromToken() == 'Admin') {
+            this.router.navigate(['/Reports']);
+            return
+          }
           this.router.navigate(['/Main-Page']);
         },
         error: (error: HttpErrorResponse) => {
@@ -65,11 +71,11 @@ export class LoginComponent implements OnInit {
             this.openSnackBar(snackBarMessage, "Ok")
             this.verificationService.updateVerificationToken(id);
             this.router.navigate(['/Verify-Account']);
-            
+
           }else{
             this.formGroup.setErrors({ unauthenticated: true });
           }
-          
+
         }
       });
   }

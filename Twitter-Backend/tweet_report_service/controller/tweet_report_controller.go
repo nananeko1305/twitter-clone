@@ -23,6 +23,7 @@ func (controller *TweetReportController) InitRoutes(router *mux.Router) {
 
 	router.HandleFunc("/reports", controller.Get).Methods("GET")
 	router.HandleFunc("/reports", controller.Post).Methods("POST")
+	router.HandleFunc("/reports", controller.Put).Methods("PUT")
 	router.HandleFunc("/reports/{id}", controller.Delete).Methods("DELETE")
 
 	http.Handle("/", router)
@@ -60,6 +61,35 @@ func (controller *TweetReportController) Post(response http.ResponseWriter, requ
 		response.WriteHeader(http.StatusInternalServerError)
 		response.Write([]byte(err.Error()))
 	}
+
+}
+
+func (controller *TweetReportController) Put(response http.ResponseWriter, request *http.Request) {
+
+	var report domain.TweetReport
+
+	err := json.NewDecoder(request.Body).Decode(&report)
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(err.Error()))
+		return
+	}
+
+	updatedReport, err := controller.tweetReportService.Put(report)
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(err.Error()))
+		return
+	}
+
+	jsonData, err := json.Marshal(&updatedReport)
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(err.Error()))
+		return
+	}
+	response.WriteHeader(http.StatusOK)
+	response.Write(jsonData)
 }
 
 func (controller *TweetReportController) Delete(response http.ResponseWriter, request *http.Request) {

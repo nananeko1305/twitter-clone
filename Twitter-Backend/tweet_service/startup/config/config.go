@@ -14,6 +14,7 @@ type Config struct {
 	TweetCachePort             string
 	CreateReportCommandSubject string
 	CreateReportReplySubject   string
+	NatsURI                    string
 }
 
 func NewConfig() *Config {
@@ -29,5 +30,6 @@ func NewConfig() *Config {
 		TweetCachePort:             os.Getenv("TWEET_CACHE_PORT"),
 		CreateReportCommandSubject: os.Getenv("CREATE_REPORT_COMMAND_SUBJECT"),
 		CreateReportReplySubject:   os.Getenv("CREATE_REPORT_REPLY_SUBJECT"),
+		NatsURI:                    os.Getenv("NATS_URI"),
 	}
 }

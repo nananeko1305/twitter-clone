@@ -79,7 +79,7 @@ func (sr *TweetRepo) CreateTables() {
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s
 					(id UUID, text text, created_at time, favorited boolean, favorite_count int, retweeted boolean,
 					retweet_count int, username text, owner_username text, image boolean, advertisement boolean,
-					PRIMARY KEY ((username), created_at))
+					PRIMARY KEY ((username), created_at, id))
 					WITH CLUSTERING ORDER BY (created_at DESC)`, //clustering key by creating date and pk for tweet id and user_id
 			COLLECTION_BY_USER)).Exec()
 
@@ -156,8 +156,8 @@ func (sr *TweetRepo) GetTweetsByUser(ctx context.Context, username string) ([]*d
 	var tweets []*domain.Tweet
 	for scanner.Next() {
 		var tweet domain.Tweet
-		err := scanner.Scan(&tweet.Username, &tweet.CreatedAt, &tweet.Advertisement, &tweet.FavoriteCount,
-			&tweet.Favorited, &tweet.ID, &tweet.Image, &tweet.OwnerUsername, &tweet.RetweetCount, &tweet.Retweeted, &tweet.Text)
+		err := scanner.Scan(&tweet.Username, &tweet.CreatedAt, &tweet.ID, &tweet.Advertisement, &tweet.FavoriteCount,
+			&tweet.Favorited, &tweet.Image, &tweet.OwnerUsername, &tweet.RetweetCount, &tweet.Retweeted, &tweet.Text)
 		if err != nil {
 			return nil, err
 		}
@@ -183,8 +183,8 @@ func (sr *TweetRepo) GetPostsFeedByUser(ctx context.Context, usernames []string)
 	var tweets []*domain.Tweet
 	for scanner.Next() {
 		var tweet domain.Tweet
-		err := scanner.Scan(&tweet.Username, &tweet.CreatedAt, &tweet.Advertisement, &tweet.FavoriteCount,
-			&tweet.Favorited, &tweet.ID, &tweet.Image, &tweet.OwnerUsername, &tweet.RetweetCount, &tweet.Retweeted, &tweet.Text)
+		err := scanner.Scan(&tweet.Username, &tweet.CreatedAt, &tweet.ID, &tweet.Advertisement, &tweet.FavoriteCount,
+			&tweet.Favorited, &tweet.Image, &tweet.OwnerUsername, &tweet.RetweetCount, &tweet.Retweeted, &tweet.Text)
 
 		if err != nil {
 			return nil, err
@@ -243,8 +243,12 @@ func (sr *TweetRepo) Post(ctx context.Context, tweet *domain.Tweet) (*domain.Twe
 		tweet.RetweetCount, tweet.Retweeted, tweet.Text, tweet.Username, tweet.OwnerUsername, tweet.Image, tweet.Advertisement).Exec()
 
 	err = sr.session.Query(
-		insertByUser, tweet.ID, tweet.CreatedAt, tweet.FavoriteCount, tweet.Favorited,
+		insertByUser, tweet.ID.String(), tweet.CreatedAt, tweet.FavoriteCount, tweet.Favorited,
 		tweet.RetweetCount, tweet.Retweeted, tweet.Text, tweet.Username, tweet.OwnerUsername, tweet.Image, tweet.Advertisement).Exec()
+
+	//err = sr.session.Query(
+	//	insertByUser, tweet.Username, tweet.CreatedAt, tweet.ID, tweet.Advertisement, tweet.FavoriteCount, tweet.Favorited,
+	//	tweet.Image, tweet.OwnerUsername, tweet.RetweetCount, tweet.Retweeted, tweet.Text).Exec()
 
 	if err != nil {
 		return nil, err

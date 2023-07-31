@@ -7,6 +7,7 @@ type Config struct {
 	ServiceHost string
 	DBPort      string
 	DBHost      string
+	NatsURI     string
 }
 
 func NewConfig() *Config {
@@ -15,5 +16,6 @@ func NewConfig() *Config {
 		ServicePort: os.Getenv("TWEET_REPORT_SERVICE_PORT"),
 		DBPort:      os.Getenv("TWEET_REPORT_DB_PORT"),
 		DBHost:      os.Getenv("TWEET_REPORT_DB_HOST"),
+		NatsURI:     os.Getenv("NATS_URI"),
 	}
 }

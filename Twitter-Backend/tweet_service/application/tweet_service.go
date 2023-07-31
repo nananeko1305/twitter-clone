@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gocql/gocql"
+	"github.com/nats-io/nats.go"
 	"github.com/sony/gobreaker"
 	events "github.com/zjalicf/twitter-clone-common/common/saga/create_event"
 	"go.opentelemetry.io/otel/trace"
@@ -22,18 +23,20 @@ var (
 )
 
 type TweetService struct {
-	store  domain.TweetStore
-	tracer trace.Tracer
-	cache  domain.TweetCache
-	cb     *gobreaker.CircuitBreaker
+	store          domain.TweetStore
+	tracer         trace.Tracer
+	cache          domain.TweetCache
+	cb             *gobreaker.CircuitBreaker
+	nastConnection *nats.Conn
 }
 
-func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer) *TweetService {
+func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats.Conn) *TweetService {
 	return &TweetService{
-		store:  store,
-		cache:  cache,
-		cb:     CircuitBreaker(),
-		tracer: tracer,
+		store:          store,
+		cache:          cache,
+		cb:             CircuitBreaker(),
+		tracer:         tracer,
+		nastConnection: natsConnection,
 	}
 }
 
@@ -96,6 +99,7 @@ func (service *TweetService) GetFeedByUser(ctx context.Context, token string) (*
 	feedInfo := bodyBytes.(domain.FeedInfo)
 	feed, err := service.store.GetPostsFeedByUser(ctx, feedInfo.Usernames)
 	if err != nil {
+		log.Println("Line 99: ", err)
 		return nil, err
 	}
 
@@ -259,4 +263,45 @@ func CircuitBreaker() *gobreaker.CircuitBreaker {
 			},
 		},
 	)
+}
+
+func (service *TweetService) SubscribeToNats(natsConnection *nats.Conn) {
+
+	_, err := natsConnection.QueueSubscribe(os.Getenv("DELETE_TWEET"), "queue-tweet-group", func(msg *nats.Msg) {
+
+		var tweetID string
+		err := json.Unmarshal(msg.Data, &tweetID)
+		if err != nil {
+			log.Println("Error in unmarshal JSON!")
+			return
+		}
+
+		_, err = service.GetOne(context.Background(), tweetID)
+		if err != nil {
+			log.Println("Tweet with that id not exist")
+			return
+		}
+
+		//TO DO => deleteTweet
+		deleted := false
+
+		dataToSend, err := json.Marshal(&deleted)
+		if err != nil {
+			log.Println("Error in marshaling json")
+			return
+		}
+
+		err = natsConnection.Publish(msg.Reply, dataToSend)
+		if err != nil {
+			log.Printf("Error in publish response: %s", err.Error())
+			return
+		}
+
+	})
+
+	if err != nil {
+		log.Printf("Error in receiving message: %s", err.Error())
+		return
+	}
+
 }
