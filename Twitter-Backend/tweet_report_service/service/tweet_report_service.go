@@ -12,6 +12,13 @@ import (
 	"tweet_report_service/repository"
 )
 
+var (
+	smtpServer     = "smtp-mail.outlook.com"
+	smtpServerPort = 587
+	smtpEmail      = os.Getenv("SMTP_AUTH_MAIL")
+	smtpPassword   = os.Getenv("SMTP_AUTH_PASSWORD")
+)
+
 type TweetReportService struct {
 	repository     repository.TweetReportRepository
 	natsConnection *nats.Conn
@@ -123,7 +130,8 @@ func (service *TweetReportService) UpdateReportCount(report domain.TweetReport) 
 		return nil
 	}
 
-	if result.Count == 2 {
+	//return to 2!!!!!!
+	if result.Count == 1 {
 
 		dataToSend, err := json.Marshal(result.TweetID)
 		if err != nil {
