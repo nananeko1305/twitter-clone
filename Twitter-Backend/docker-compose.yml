@@ -151,6 +151,9 @@ services:
     ports:
       - ${TWEET_REPORT_SERVICE_PORT}:${TWEET_REPORT_SERVICE_PORT}
     restart: always
+    depends_on:
+      - nats
+      - tweet_report_db
     networks:
       - network
     mem_limit: 50mb

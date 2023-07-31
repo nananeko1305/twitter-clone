@@ -22,4 +22,5 @@ p, Business, /timespent, POST
 p, Regular, /timespent, POST
 p, Business, /viewCount, POST
 p, Regular, /viewCount, POST
+p, Regular, /tweet/*, DELETE
 

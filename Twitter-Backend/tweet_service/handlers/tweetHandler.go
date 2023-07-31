@@ -53,10 +53,23 @@ func (handler *TweetHandler) Init(router *mux.Router) {
 	router.HandleFunc("/whoLiked/{id}", handler.GetLikesByTweet).Methods("GET")
 	router.HandleFunc("/feed", handler.GetFeedByUser).Methods("GET")
 	router.HandleFunc("/retweet", handler.Retweet).Methods("POST")
+	router.HandleFunc("/tweet/{id}", handler.DeleteTweet).Methods("DELETE")
 
 	http.Handle("/", router)
 	log.Println("Successful")
 	log.Fatal(http.ListenAndServe(":8001", authorization.Authorizer(authEnforcer)(router)))
+}
+
+func (handler *TweetHandler) DeleteTweet(writer http.ResponseWriter, req *http.Request) {
+
+	id := mux.Vars(req)["id"]
+
+	err := handler.service.DeleteTweet(id)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		writer.Write([]byte(err.Error()))
+		return
+	}
 }
 
 func (handler *TweetHandler) GetAll(writer http.ResponseWriter, req *http.Request) {

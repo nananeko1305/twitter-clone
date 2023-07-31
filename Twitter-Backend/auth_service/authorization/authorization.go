@@ -26,7 +26,6 @@ func Authorizer(e *casbin.Enforcer) func(next http.Handler) http.Handler {
 					return
 				}
 				if res {
-					log.Println("redirect")
 					next.ServeHTTP(w, r)
 				} else {
 					http.Error(w, "forbidden", http.StatusForbidden)

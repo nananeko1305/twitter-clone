@@ -269,6 +269,8 @@ func (service *TweetService) SubscribeToNats(natsConnection *nats.Conn) {
 
 	_, err := natsConnection.QueueSubscribe(os.Getenv("DELETE_TWEET"), "queue-tweet-group", func(msg *nats.Msg) {
 
+		log.Println("DELETE TWEET")
+
 		var tweetID string
 		err := json.Unmarshal(msg.Data, &tweetID)
 		if err != nil {
@@ -276,7 +278,7 @@ func (service *TweetService) SubscribeToNats(natsConnection *nats.Conn) {
 			return
 		}
 
-		_, err = service.GetOne(context.Background(), tweetID)
+		tweet, err := service.GetOne(context.Background(), tweetID)
 		if err != nil {
 			log.Println("Tweet with that id not exist")
 			return
@@ -284,6 +286,10 @@ func (service *TweetService) SubscribeToNats(natsConnection *nats.Conn) {
 
 		//TO DO => deleteTweet
 		deleted := false
+		err = service.store.DeleteOneTweet(tweet)
+		if err == nil {
+			deleted = true
+		}
 
 		dataToSend, err := json.Marshal(&deleted)
 		if err != nil {
@@ -304,4 +310,27 @@ func (service *TweetService) SubscribeToNats(natsConnection *nats.Conn) {
 		return
 	}
 
+	log.Println("Connected to nats: ", os.Getenv("NATS_URI"))
+
+}
+
+func (service *TweetService) DeleteTweet(tweetID string) error {
+
+	log.Println("USLO U DELET TWEET SERVICE LAYER")
+	log.Println("TWEETID: ", tweetID)
+
+	tweet, err := service.GetOne(context.Background(), tweetID)
+	if err != nil {
+		log.Println("Error in 321: ", err)
+		return err
+	}
+	log.Println(tweet)
+
+	err = service.store.DeleteOneTweet(tweet)
+	if err != nil {
+		log.Println("Error in 328: ", err)
+		return err
+	}
+
+	return nil
 }

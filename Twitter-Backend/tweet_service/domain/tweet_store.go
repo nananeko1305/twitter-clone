@@ -8,7 +8,6 @@ import (
 type TweetStore interface {
 	GetPostsFeedByUser(ctx context.Context, usernames []string) ([]*Tweet, error)
 	GetRecommendAdsForUser(ctx context.Context, ids []string) ([]*Tweet, error)
-	//SaveImageRedis(imageBytes []byte) error
 	GetAll(ctx context.Context) ([]Tweet, error)
 	GetTweetsByUser(ctx context.Context, username string) ([]*Tweet, error)
 	Post(ctx context.Context, tweet *Tweet) (*Tweet, error)
@@ -18,4 +17,5 @@ type TweetStore interface {
 	SaveImage(ctx context.Context, tweetID gocql.UUID, imageBytes []byte) error
 	GetTweetImage(ctx context.Context, id string) ([]byte, error)
 	GetOne(ctx context.Context, tweetID string) (*Tweet, error)
+	DeleteOneTweet(tweet *Tweet) error
 }

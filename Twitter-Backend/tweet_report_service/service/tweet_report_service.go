@@ -42,6 +42,8 @@ func (service *TweetReportService) Post(report domain.TweetReport) error {
 	}
 
 	err := service.repository.IsReportedByUser(report)
+	log.Println("Error is : ", err)
+
 	if err != nil {
 		report.Id = primitive.NewObjectID()
 		report.Status = domain.Pending
@@ -121,10 +123,7 @@ func (service *TweetReportService) UpdateReportCount(report domain.TweetReport) 
 		return nil
 	}
 
-	//return to 2!!!!!!
-	if result.Count == 0 {
-
-		//pozivanje message brokera
+	if result.Count == 2 {
 
 		dataToSend, err := json.Marshal(result.TweetID)
 		if err != nil {

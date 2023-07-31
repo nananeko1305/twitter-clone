@@ -86,6 +86,7 @@ func (repository TweetReportRepositoryImpl) Delete(id primitive.ObjectID) error 
 func (repository TweetReportRepositoryImpl) IsReportedByUser(report domain.TweetReport) error {
 
 	filter := bson.M{"username": report.Username, "tweetID": report.TweetID}
+	log.Println(filter)
 
 	result := repository.reports.FindOne(context.Background(), filter)
 

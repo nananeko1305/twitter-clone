@@ -65,7 +65,6 @@ func (sr *TweetRepo) CloseSession() {
 	sr.session.Close()
 }
 
-// Field picture is missing
 func (sr *TweetRepo) CreateTables() {
 	err := sr.session.Query(
 		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s
@@ -99,8 +98,6 @@ func (sr *TweetRepo) CreateTables() {
 	}
 }
 
-// insert into tweet (tweet_id, created_at, favorite_count, favorited, retweet_count, retweeted, text, user_id) values
-// (60089906-68d2-11ed-9022-0242ac120002, 1641540002, 0, false, 0, false, 'cao', dae71a94-68d2-11ed-9022-0242ac120002) ;
 func (sr *TweetRepo) GetAll(ctx context.Context) ([]domain.Tweet, error) {
 	scanner := sr.session.Query(`SELECT * FROM tweet`).Iter().Scanner()
 	var tweets []domain.Tweet
@@ -246,10 +243,6 @@ func (sr *TweetRepo) Post(ctx context.Context, tweet *domain.Tweet) (*domain.Twe
 		insertByUser, tweet.ID.String(), tweet.CreatedAt, tweet.FavoriteCount, tweet.Favorited,
 		tweet.RetweetCount, tweet.Retweeted, tweet.Text, tweet.Username, tweet.OwnerUsername, tweet.Image, tweet.Advertisement).Exec()
 
-	//err = sr.session.Query(
-	//	insertByUser, tweet.Username, tweet.CreatedAt, tweet.ID, tweet.Advertisement, tweet.FavoriteCount, tweet.Favorited,
-	//	tweet.Image, tweet.OwnerUsername, tweet.RetweetCount, tweet.Retweeted, tweet.Text).Exec()
-
 	if err != nil {
 		return nil, err
 	}
@@ -276,6 +269,7 @@ func (sr *TweetRepo) Favorite(ctx context.Context, tweetID string, username stri
 
 	id, err := gocql.ParseUUID(tweetID)
 	if err != nil {
+		log.Println("275")
 		return -1, nil
 	}
 
@@ -287,6 +281,7 @@ func (sr *TweetRepo) Favorite(ctx context.Context, tweetID string, username stri
 		var favorite domain.Favorite
 		err = scanner.Scan(&favorite.TweetID, &favorite.Username, &favorite.ID)
 		if err != nil {
+			log.Println("287")
 			log.Printf("Error int TweetCassandraStore, Favorite(): %s", err.Error())
 			return 502, err
 		}
@@ -304,6 +299,7 @@ func (sr *TweetRepo) Favorite(ctx context.Context, tweetID string, username stri
 			&tweet.Image, &tweet.OwnerUsername, &tweet.RetweetCount, &tweet.Retweeted, &tweet.Text, &tweet.Username)
 		tweetUsername = tweet.Username
 		if err != nil {
+			log.Println("305")
 			log.Printf("Error int TweetCassandraStore, Favorite(): %s", err.Error())
 			return 500, err
 		}
@@ -312,6 +308,7 @@ func (sr *TweetRepo) Favorite(ctx context.Context, tweetID string, username stri
 	}
 
 	if len(tweets) == 0 {
+		log.Println("314")
 		log.Printf("Error int TweetCassandraStore, Favorite(): %s", err.Error())
 		return 500, nil
 	}
@@ -340,6 +337,7 @@ func (sr *TweetRepo) Favorite(ctx context.Context, tweetID string, username stri
 		err = sr.session.Query(
 			insert, idFav.String(), tweets[0].ID.String(), username).Exec()
 		if err != nil {
+			log.Println("343")
 			log.Printf("Error int TweetCassandraStore, Favorite(): %s", err.Error())
 			return 502, err
 		}
@@ -350,6 +348,7 @@ func (sr *TweetRepo) Favorite(ctx context.Context, tweetID string, username stri
 		err = sr.session.Query(deleteQuery, id, username).Exec()
 
 		if err != nil {
+			log.Println("354")
 			return 502, err
 		}
 
@@ -360,15 +359,17 @@ func (sr *TweetRepo) Favorite(ctx context.Context, tweetID string, username stri
 		`UPDATE tweet SET favorited=?, favorite_count=? where id=? and created_at = ?`, favorited, favoriteCount, id.String(), createdAt).Exec()
 
 	if err != nil {
+		log.Println("365")
 		return 502, err
 	}
 
-	err = sr.session.Query(
-		`UPDATE tweets_by_user SET favorited=?, favorite_count=? where username=? and created_at=?`,
-		favorited, favoriteCount, tweetUsername, createdAt).Exec()
+	err7 := sr.session.Query(
+		`UPDATE tweets_by_user SET favorited=?, favorite_count=? where username=? and created_at=? and id=?`,
+		favorited, favoriteCount, tweetUsername, createdAt, tweets[0].ID).Exec()
 
-	if err != nil {
-		return 502, err
+	if err7 != nil {
+		log.Println("374")
+		return 502, err7
 	}
 
 	if isDeleted {
@@ -529,4 +530,23 @@ func (sr *TweetRepo) Retweet(ctx context.Context, tweetID string, username strin
 
 	return &newID, 200, nil
 
+}
+
+func (sr *TweetRepo) DeleteOneTweet(tweet *domain.Tweet) error {
+
+	err := sr.session.Query(`DELETE FROM tweet WHERE id=?`, tweet.ID).Exec()
+	err = sr.session.Query(`DELETE FROM tweets_by_user WHERE username=? AND created_at=? AND id=?`, tweet.Username, tweet.CreatedAt, tweet.ID).Exec()
+	if tweet.FavoriteCount > 0 {
+		err = sr.session.Query(`DELETE FROM favorite WHERE tweet_id=?`, tweet.ID).Exec()
+	}
+	if tweet.Image {
+		err = sr.session.Query(`DELETE FROM tweet_image WHERE tweet_id=?`, tweet.ID).Exec()
+	}
+
+	if err != nil {
+		log.Println("Error in executing delete query: ", err)
+		return err
+	}
+
+	return nil
 }

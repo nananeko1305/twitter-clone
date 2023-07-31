@@ -38,7 +38,6 @@ func (handler *CreateUserCommandHandler) handle(command *events.CreateUserComman
 	switch command.Type {
 
 	case events.UpdateAuth:
-		log.Println("Uslo u update auth")
 		reply.Type = events.AuthUpdated
 
 	case events.SendMail:
@@ -52,7 +51,6 @@ func (handler *CreateUserCommandHandler) handle(command *events.CreateUserComman
 		}
 
 	case events.RollbackAuth:
-		//TODO
 		_ = handler.authService.DeleteUserByID(context.Background(), user.ID)
 		reply.Type = events.UnknownReply
 		fmt.Println("Rollback auth")
