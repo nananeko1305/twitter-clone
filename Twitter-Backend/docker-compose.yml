@@ -314,14 +314,15 @@ services:
     image: docker.elastic.co/kibana/kibana:7.4.0
     environment:
       SERVER_NAME: kibana
-      ELASTICSEARCH_HOSTS: ${ELASTICSEARCH_HOSTS}
-      KIBANA_PORT: 5601
-    ports:
-      - ${KIBANA_PORT}:${KIBANA_PORT}
+      ELASTICSEARCH_HOSTS: http://elastic_search:9200
     depends_on:
       - elastic_search
+    ports:
+      - ${KIBANA_PORT}:${KIBANA_PORT}
     networks:
       - network
+
+
 
 volumes:
   cassandra_store:
@@ -334,6 +335,7 @@ volumes:
   report_db:
   event_store:
   elastic_search:
+  kibana:
 
 networks:
   network:

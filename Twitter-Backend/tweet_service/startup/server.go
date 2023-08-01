@@ -3,7 +3,7 @@ package startup
 import (
 	"context"
 	"fmt"
-	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	nats2 "github.com/nats-io/nats.go"

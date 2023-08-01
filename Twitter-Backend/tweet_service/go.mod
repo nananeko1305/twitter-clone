@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/casbin/casbin v1.9.1
 	github.com/cristalhq/jwt/v4 v4.0.2
+	github.com/elastic/go-elasticsearch/v7 v7.17.10
 	github.com/elastic/go-elasticsearch/v8 v8.9.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gocql/gocql v1.3.1

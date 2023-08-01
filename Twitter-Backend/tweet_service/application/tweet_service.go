@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gocql/gocql"
 	"github.com/nats-io/nats.go"
 	"github.com/sony/gobreaker"
