@@ -3,7 +3,7 @@ package startup
 import (
 	"context"
 	"fmt"
-	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	nats2 "github.com/nats-io/nats.go"
@@ -48,7 +48,7 @@ func (server *Server) Start() {
 
 	cfg := config.NewConfig()
 
-	elasticClient, err := configs.ConnectToElastic(cfg)
+	elasticApi, err := configs.ConnectToElastic(cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to Elasticsearch: %v", err)
 	}
@@ -76,16 +76,20 @@ func (server *Server) Start() {
 	defer tweetStore.CloseSession()
 	tweetStore.CreateTables()
 
-	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection, elasticClient)
+	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection, elasticApi)
 	tweetService.SubscribeToNats(natsConnection)
+	err = tweetService.CheckIndex()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	tweetHandler := server.initTweetHandler(tweetService, tracer)
 
 	server.start(tweetHandler)
 }
 
-func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats2.Conn, elasticClient *elasticsearch.Client) *application.TweetService {
-	service := application.NewTweetService(&store, cache, tracer, natsConnection, elasticClient)
+func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats2.Conn, elasticAPI *esapi.API) *application.TweetService {
+	service := application.NewTweetService(&store, cache, tracer, natsConnection, elasticAPI)
 	return service
 }
 

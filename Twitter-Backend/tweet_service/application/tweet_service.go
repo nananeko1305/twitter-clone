@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/gocql/gocql"
 	"github.com/nats-io/nats.go"
 	"github.com/sony/gobreaker"
@@ -21,6 +21,7 @@ import (
 var (
 	followServiceHost = os.Getenv("FOLLOW_SERVICE_HOST")
 	followServicePort = os.Getenv("FOLLOW_SERVICE_PORT")
+	indexName         = "tweets"
 )
 
 type TweetService struct {
@@ -29,17 +30,17 @@ type TweetService struct {
 	cache          domain.TweetCache
 	cb             *gobreaker.CircuitBreaker
 	nastConnection *nats.Conn
-	elasticClient  *elasticsearch.Client
+	elasticApi     *esapi.API
 }
 
-func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats.Conn, elasticClient *elasticsearch.Client) *TweetService {
+func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats.Conn, elasticApi *esapi.API) *TweetService {
 	return &TweetService{
 		store:          store,
 		cache:          cache,
 		cb:             CircuitBreaker(),
 		tracer:         tracer,
 		nastConnection: natsConnection,
-		elasticClient:  elasticClient,
+		elasticApi:     elasticApi,
 	}
 }
 
@@ -331,5 +332,24 @@ func (service *TweetService) DeleteTweet(tweetID string) error {
 		return err
 	}
 
+	return nil
+}
+
+func (service *TweetService) CheckIndex() error {
+
+	var index []string
+	index = append(index, "tweets")
+
+	exists, err := service.elasticApi.Indices.Exists(index)
+	if err != nil {
+		return err
+	}
+
+	if exists.StatusCode == 404 {
+		_, err := service.elasticApi.Indices.Create(indexName)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
