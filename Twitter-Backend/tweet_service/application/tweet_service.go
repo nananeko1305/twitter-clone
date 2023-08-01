@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/gocql/gocql"
 	"github.com/nats-io/nats.go"
 	"github.com/sony/gobreaker"
@@ -28,15 +29,17 @@ type TweetService struct {
 	cache          domain.TweetCache
 	cb             *gobreaker.CircuitBreaker
 	nastConnection *nats.Conn
+	elasticClient  *elasticsearch.Client
 }
 
-func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats.Conn) *TweetService {
+func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats.Conn, elasticClient *elasticsearch.Client) *TweetService {
 	return &TweetService{
 		store:          store,
 		cache:          cache,
 		cb:             CircuitBreaker(),
 		tracer:         tracer,
 		nastConnection: natsConnection,
+		elasticClient:  elasticClient,
 	}
 }
 
@@ -267,9 +270,8 @@ func CircuitBreaker() *gobreaker.CircuitBreaker {
 
 func (service *TweetService) SubscribeToNats(natsConnection *nats.Conn) {
 
+	//subscribe to chanel with name DELETE_TWEET
 	_, err := natsConnection.QueueSubscribe(os.Getenv("DELETE_TWEET"), "queue-tweet-group", func(msg *nats.Msg) {
-
-		log.Println("DELETE TWEET")
 
 		var tweetID string
 		err := json.Unmarshal(msg.Data, &tweetID)
@@ -284,7 +286,6 @@ func (service *TweetService) SubscribeToNats(natsConnection *nats.Conn) {
 			return
 		}
 
-		//TO DO => deleteTweet
 		deleted := false
 		err = service.store.DeleteOneTweet(tweet)
 		if err == nil {
@@ -309,8 +310,6 @@ func (service *TweetService) SubscribeToNats(natsConnection *nats.Conn) {
 		log.Printf("Error in receiving message: %s", err.Error())
 		return
 	}
-
-	log.Println("Connected to nats: ", os.Getenv("NATS_URI"))
 
 }
 

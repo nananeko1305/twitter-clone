@@ -15,6 +15,7 @@ type Config struct {
 	CreateReportCommandSubject string
 	CreateReportReplySubject   string
 	NatsURI                    string
+	ELASTICSEARCH_HOSTS        string
 }
 
 func NewConfig() *Config {
@@ -31,5 +32,6 @@ func NewConfig() *Config {
 		CreateReportCommandSubject: os.Getenv("CREATE_REPORT_COMMAND_SUBJECT"),
 		CreateReportReplySubject:   os.Getenv("CREATE_REPORT_REPLY_SUBJECT"),
 		NatsURI:                    os.Getenv("NATS_URI"),
+		ELASTICSEARCH_HOSTS:        os.Getenv("ELASTICSEARCH_HOSTS"),
 	}
 }

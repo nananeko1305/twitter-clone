@@ -3,6 +3,7 @@ package startup
 import (
 	"context"
 	"fmt"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	nats2 "github.com/nats-io/nats.go"
@@ -47,7 +48,12 @@ func (server *Server) Start() {
 
 	cfg := config.NewConfig()
 
-	//nats connection
+	elasticClient, err := configs.ConnectToElastic(cfg)
+	if err != nil {
+		log.Fatalf("Failed to connect to Elasticsearch: %v", err)
+	}
+
+	//connect to nats client
 	natsConnection := configs.ConnectToNats(cfg)
 
 	ctx := context.Background()
@@ -70,7 +76,7 @@ func (server *Server) Start() {
 	defer tweetStore.CloseSession()
 	tweetStore.CreateTables()
 
-	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection)
+	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection, elasticClient)
 	tweetService.SubscribeToNats(natsConnection)
 
 	tweetHandler := server.initTweetHandler(tweetService, tracer)
@@ -78,8 +84,8 @@ func (server *Server) Start() {
 	server.start(tweetHandler)
 }
 
-func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats2.Conn) *application.TweetService {
-	service := application.NewTweetService(&store, cache, tracer, natsConnection)
+func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats2.Conn, elasticClient *elasticsearch.Client) *application.TweetService {
+	service := application.NewTweetService(&store, cache, tracer, natsConnection, elasticClient)
 	return service
 }
 

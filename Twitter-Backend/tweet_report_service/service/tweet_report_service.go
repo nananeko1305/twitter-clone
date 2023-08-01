@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/nats-io/nats.go"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
@@ -22,12 +23,14 @@ var (
 type TweetReportService struct {
 	repository     repository.TweetReportRepository
 	natsConnection *nats.Conn
+	elasticClient  *elasticsearch.Client
 }
 
-func NewTweetReportService(repository repository.TweetReportRepository, natsConnection *nats.Conn) *TweetReportService {
+func NewTweetReportService(repository repository.TweetReportRepository, natsConnection *nats.Conn, elasticClient *elasticsearch.Client) *TweetReportService {
 	return &TweetReportService{
 		repository:     repository,
 		natsConnection: natsConnection,
+		elasticClient:  elasticClient,
 	}
 }
 

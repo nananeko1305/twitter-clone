@@ -28,6 +28,7 @@ services:
       CREATE_REPORT_REPLY_SUBJECT: ${CREATE_REPORT_REPLY_SUBJECT}
       NATS_URI: ${NATS_URI}
       DELETE_TWEET : ${DELETE_TWEET}
+      ELASTICSEARCH_HOSTS: ${ELASTICSEARCH_HOSTS}
     depends_on:
       jaeger:
         condition: service_started
@@ -160,7 +161,6 @@ services:
       - network
     mem_limit: 50mb
 
-
   api_gateway:
     build:
       context: ./api_gateway/
@@ -193,7 +193,6 @@ services:
     networks:
       - network
     mem_limit: 5gb
-
 
   user_db:
     image: mongo
@@ -299,6 +298,31 @@ services:
       - network
     mem_limit: 50mb
 
+  elastic_search:
+    container_name: elastic_search
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
+    environment:
+      - discovery.type=single-node
+      - ES_PORT=9200
+    ports:
+      - ${ES_PORT}:${ES_PORT}
+    networks:
+      - network
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.4.0
+    environment:
+      SERVER_NAME: kibana
+      ELASTICSEARCH_HOSTS: ${ELASTICSEARCH_HOSTS}
+      KIBANA_PORT: 5601
+    ports:
+      - ${KIBANA_PORT}:${KIBANA_PORT}
+    depends_on:
+      - elastic_search
+    networks:
+      - network
+
 volumes:
   cassandra_store:
   neo4j_data:
@@ -309,7 +333,9 @@ volumes:
   auth_db:
   report_db:
   event_store:
+  elastic_search:
 
 networks:
   network:
     driver: bridge
+

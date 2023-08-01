@@ -24,13 +24,17 @@ func NewServer(config *config.Config) *Server {
 
 func (server *Server) Start() {
 
+	//connect to NATS client
 	natsConnection := configs.ConnectToNats(server.config)
 	defer natsConnection.Close()
 
+	//connect to MongoDB with client
 	mongoClient := configs.ConnectToMongoDB(server.config.DBHost, server.config.DBPort)
 
+	elasticClient := configs.ConnectToElastic(server.config)
+
 	tweetReportRepository := implementation.NewTweetReportRepositoryImpl(mongoClient)
-	tweetReportService := service.NewTweetReportService(tweetReportRepository, natsConnection)
+	tweetReportService := service.NewTweetReportService(tweetReportRepository, natsConnection, elasticClient)
 	tweetReportController := controller.NewTweetReportController(tweetReportService)
 
 	router := mux.NewRouter()

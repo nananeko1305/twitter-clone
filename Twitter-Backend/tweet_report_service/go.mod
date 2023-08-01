@@ -3,13 +3,14 @@ module tweet_report_service
 go 1.18
 
 require (
+	github.com/elastic/go-elasticsearch/v8 v8.9.0
 	github.com/gorilla/mux v1.8.0
 	github.com/nats-io/nats.go v1.28.0
 	go.mongodb.org/mongo-driver v1.12.0
-	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
 
 require (
+	github.com/elastic/elastic-transport-go/v8 v8.0.0-20230329154755-1a3c63de0db6 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
@@ -27,5 +28,4 @@ require (
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
-	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 )
