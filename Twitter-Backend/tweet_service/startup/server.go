@@ -3,6 +3,7 @@ package startup
 import (
 	"context"
 	"fmt"
+	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
@@ -48,7 +49,7 @@ func (server *Server) Start() {
 
 	cfg := config.NewConfig()
 
-	elasticApi, err := configs.ConnectToElastic(cfg)
+	client, elasticApi, err := configs.ConnectToElastic(cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to Elasticsearch: %v", err)
 	}
@@ -76,9 +77,11 @@ func (server *Server) Start() {
 	defer tweetStore.CloseSession()
 	tweetStore.CreateTables()
 
-	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection, elasticApi)
+	elasticStore := server.initTweetElastic(client, elasticApi)
+
+	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection, elasticStore)
 	tweetService.SubscribeToNats(natsConnection)
-	err = tweetService.CheckIndex()
+	err = elasticStore.CheckIndex()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -88,13 +91,18 @@ func (server *Server) Start() {
 	server.start(tweetHandler)
 }
 
-func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats2.Conn, elasticAPI *esapi.API) *application.TweetService {
-	service := application.NewTweetService(&store, cache, tracer, natsConnection, elasticAPI)
+func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats2.Conn, elasticService domain.TweetElasticStore) *application.TweetService {
+	service := application.NewTweetService(&store, cache, tracer, natsConnection, elasticService)
 	return service
 }
 
 func (server *Server) initTweetCache(client *redis.Client, tracer trace.Tracer) domain.TweetCache {
 	cache := store2.NewTweetRedisCache(client, tracer)
+	return cache
+}
+
+func (server *Server) initTweetElastic(client *elasticsearch.Client, elasticApi *esapi.API) domain.TweetElasticStore {
+	cache := store2.NewTweetElasticStoreImpl(client, elasticApi)
 	return cache
 }
 

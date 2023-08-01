@@ -6,7 +6,7 @@ import (
 	"tweet_service/startup/config"
 )
 
-func ConnectToElastic(config *config.Config) (*esapi.API, error) {
+func ConnectToElastic(config *config.Config) (*elasticsearch.Client, *esapi.API, error) {
 
 	cfg := elasticsearch.Config{
 		Addresses: []string{
@@ -15,10 +15,10 @@ func ConnectToElastic(config *config.Config) (*esapi.API, error) {
 	}
 	client, err := elasticsearch.NewClient(cfg)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	api := esapi.New(client)
 
-	return api, nil
+	return client, api, nil
 }
