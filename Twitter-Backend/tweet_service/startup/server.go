@@ -8,6 +8,7 @@ import (
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	nats2 "github.com/nats-io/nats.go"
+	"github.com/olivere/elastic/v7"
 	saga "github.com/zjalicf/twitter-clone-common/common/saga/messaging"
 	"github.com/zjalicf/twitter-clone-common/common/saga/messaging/nats"
 	"go.opentelemetry.io/otel"
@@ -20,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"reflect"
 	"syscall"
 	"time"
 	"tweet_service/application"
@@ -49,10 +51,22 @@ func (server *Server) Start() {
 
 	cfg := config.NewConfig()
 
+	//basic elastic
 	client, elasticApi, err := configs.ConnectToElastic(cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to Elasticsearch: %v", err)
 	}
+
+	//oliverElasic
+	oliver, err := elastic.NewClient(
+		elastic.SetURL(server.config.ELASTICSEARCH_HOSTS),
+	)
+	if err != nil {
+		log.Fatalf("Failed to connect to Elasticsearch with oliver: %v", err)
+	}
+
+	log.Println(oliver)
+	log.Println(reflect.TypeOf(oliver))
 
 	//connect to nats client
 	natsConnection := configs.ConnectToNats(cfg)
@@ -77,7 +91,7 @@ func (server *Server) Start() {
 	defer tweetStore.CloseSession()
 	tweetStore.CreateTables()
 
-	elasticStore := server.initTweetElastic(client, elasticApi)
+	elasticStore := server.initTweetElastic(client, elasticApi, oliver)
 
 	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection, elasticStore)
 	tweetService.SubscribeToNats(natsConnection)
@@ -101,8 +115,8 @@ func (server *Server) initTweetCache(client *redis.Client, tracer trace.Tracer) 
 	return cache
 }
 
-func (server *Server) initTweetElastic(client *elasticsearch.Client, elasticApi *esapi.API) domain.TweetElasticStore {
-	cache := store2.NewTweetElasticStoreImpl(client, elasticApi)
+func (server *Server) initTweetElastic(client *elasticsearch.Client, elasticApi *esapi.API, oliverElastic *elastic.Client) domain.TweetElasticStore {
+	cache := store2.NewTweetElasticStoreImpl(client, elasticApi, oliverElastic)
 	return cache
 }
 

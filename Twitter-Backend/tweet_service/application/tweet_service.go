@@ -24,7 +24,7 @@ var (
 
 type TweetService struct {
 	store          domain.TweetStore
-	tweetElastic   domain.TweetElasticStore
+	elastic        domain.TweetElasticStore
 	tracer         trace.Tracer
 	cache          domain.TweetCache
 	cb             *gobreaker.CircuitBreaker
@@ -34,7 +34,7 @@ type TweetService struct {
 func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats.Conn, tweetElastic domain.TweetElasticStore) *TweetService {
 	return &TweetService{
 		store:          store,
-		tweetElastic:   tweetElastic,
+		elastic:        tweetElastic,
 		cache:          cache,
 		cb:             CircuitBreaker(),
 		tracer:         tracer,
@@ -45,6 +45,8 @@ func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer tr
 func (service *TweetService) GetAll(ctx context.Context) ([]domain.Tweet, error) {
 	ctx, span := service.tracer.Start(ctx, "TweetService.GetAll")
 	defer span.End()
+
+	service.elastic.GetAll()
 
 	return service.store.GetAll(ctx)
 }
@@ -165,7 +167,7 @@ func (service *TweetService) Post(ctx context.Context, tweet *domain.Tweet, user
 	tweet.RetweetCount = 0
 	tweet.Username = username
 
-	err := service.tweetElastic.Post(*tweet)
+	err := service.elastic.Post(*tweet)
 	if err != nil {
 		return nil, err
 	}
@@ -197,6 +199,16 @@ func (service *TweetService) Favorite(ctx context.Context, id string, username s
 		if err != nil {
 			return status, err
 		}
+	}
+
+	tweet, err := service.store.GetOne(ctx, id)
+	if err != nil {
+		return 0, err
+	}
+
+	err = service.elastic.Put(tweet)
+	if err != nil {
+		return 0, err
 	}
 
 	return status, nil
@@ -319,19 +331,20 @@ func (service *TweetService) SubscribeToNats(natsConnection *nats.Conn) {
 
 func (service *TweetService) DeleteTweet(tweetID string) error {
 
-	log.Println("USLO U DELET TWEET SERVICE LAYER")
-	log.Println("TWEETID: ", tweetID)
-
 	tweet, err := service.GetOne(context.Background(), tweetID)
 	if err != nil {
 		log.Println("Error in 321: ", err)
 		return err
 	}
-	log.Println(tweet)
 
 	err = service.store.DeleteOneTweet(tweet)
 	if err != nil {
 		log.Println("Error in 328: ", err)
+		return err
+	}
+
+	err = service.elastic.Delete(tweetID)
+	if err != nil {
 		return err
 	}
 
