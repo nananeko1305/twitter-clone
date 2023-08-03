@@ -21,7 +21,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"reflect"
 	"syscall"
 	"time"
 	"tweet_service/application"
@@ -65,9 +64,6 @@ func (server *Server) Start() {
 		log.Fatalf("Failed to connect to Elasticsearch with oliver: %v", err)
 	}
 
-	log.Println(oliver)
-	log.Println(reflect.TypeOf(oliver))
-
 	//connect to nats client
 	natsConnection := configs.ConnectToNats(cfg)
 
@@ -92,6 +88,11 @@ func (server *Server) Start() {
 	tweetStore.CreateTables()
 
 	elasticStore := server.initTweetElastic(client, elasticApi, oliver)
+	err = elasticStore.CheckIndex()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection, elasticStore)
 	tweetService.SubscribeToNats(natsConnection)

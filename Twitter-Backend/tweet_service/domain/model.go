@@ -68,6 +68,7 @@ type FeedData struct {
 	Ads  []*Tweet `json:"ads"`
 }
 
-//id, ad , created at, favcount, favorited, image, owusername, retweetcount, retweeted, text, username
-// bf4054c7-7ea8-4e5e-9714-03b8b880e28f | True | 1675109581 | 1 | True | True |  | 1 | True | Reklama | Company123
-//INSERT INTO tweet(id, advertisement, created_at, favorite)
+type Search struct {
+	SearchSTRs []string `json:"search_st_rs"`
+	Fields     []string `json:"fields"`
+}

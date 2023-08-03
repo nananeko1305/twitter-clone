@@ -7,4 +7,5 @@ type TweetElasticStore interface {
 	Put(tweet *Tweet) error
 	Delete(id string) error
 	CheckIndex() error
+	Search(search Search) ([]*Tweet, error)
 }

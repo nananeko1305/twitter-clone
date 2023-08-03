@@ -54,6 +54,7 @@ func (handler *TweetHandler) Init(router *mux.Router) {
 	router.HandleFunc("/feed", handler.GetFeedByUser).Methods("GET")
 	router.HandleFunc("/retweet", handler.Retweet).Methods("POST")
 	router.HandleFunc("/tweet/{id}", handler.DeleteTweet).Methods("DELETE")
+	router.HandleFunc("/search", handler.Search).Methods("POST")
 
 	http.Handle("/", router)
 	log.Println("Successful")
@@ -343,4 +344,35 @@ func (handler *TweetHandler) Retweet(writer http.ResponseWriter, req *http.Reque
 	}
 
 	writer.WriteHeader(http.StatusOK)
+}
+
+func (handler *TweetHandler) Search(writer http.ResponseWriter, req *http.Request) {
+
+	var search domain.Search
+
+	err := json.NewDecoder(req.Body).Decode(&search)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+	tweets, err := handler.service.Search(search)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+	jsonData, err := json.Marshal(&tweets)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	writer.Write(jsonData)
+
 }

@@ -350,3 +350,11 @@ func (service *TweetService) DeleteTweet(tweetID string) error {
 
 	return nil
 }
+
+func (service *TweetService) Search(search domain.Search) ([]*domain.Tweet, error) {
+	tweets, err := service.elastic.Search(search)
+	if err != nil {
+		return nil, err
+	}
+	return tweets, nil
+}

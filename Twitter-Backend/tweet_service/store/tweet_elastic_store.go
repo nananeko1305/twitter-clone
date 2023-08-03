@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/olivere/elastic/v7"
@@ -14,9 +15,9 @@ import (
 )
 
 type TweetElasticStoreImpl struct {
-	client        *elasticsearch.Client
-	elasticApi    *esapi.API
-	oliverElastic *elastic.Client
+	client         *elasticsearch.Client
+	elasticApi     *esapi.API
+	olivereElastic *elastic.Client
 }
 
 var (
@@ -25,9 +26,9 @@ var (
 
 func NewTweetElasticStoreImpl(client *elasticsearch.Client, elasticApi *esapi.API, oliverElastic *elastic.Client) domain.TweetElasticStore {
 	return &TweetElasticStoreImpl{
-		client:        client,
-		elasticApi:    elasticApi,
-		oliverElastic: oliverElastic,
+		client:         client,
+		elasticApi:     elasticApi,
+		olivereElastic: oliverElastic,
 	}
 }
 
@@ -80,29 +81,28 @@ func (repository *TweetElasticStoreImpl) Get(id string) error {
 
 func (repository *TweetElasticStoreImpl) GetAll() ([]*domain.Tweet, error) {
 
-	//query := `{"query": {"match_all": {}}}`
-	//
-	//response, err := repository.client.Search(
-	//	repository.client.Search.WithContext(context.Background()),
-	//	repository.client.Search.WithIndex(indexName),
-	//	repository.client.Search.WithBody(bytes.NewReader([]byte(query))),
-	//)
-	//if err != nil {
-	//	log.Fatalf("Error sending the search request: %s", err)
-	//}
-	//
-	//defer response.Body.Close()
-	//
-	//if response.IsError() {
-	//	log.Fatalf("Error response: %s", response.Status())
-	//}
-	//
-	//var data map[string]interface{}
-	//if err := json.NewDecoder(response.Body).Decode(&data); err != nil {
-	//	log.Fatalf("Error parsing the response: %s", err)
-	//}
-	//
-	//log.Println(data["hits"])
+	// Searching with olivere/elastic client
+	response, err := repository.olivereElastic.Search().
+		Index(indexName).
+		Query(elastic.NewMatchAllQuery()).
+		Do(context.Background())
+	if err != nil {
+		log.Fatalf("Error executing the search: %s", err)
+	}
+
+	// Mapping every tweet from json to domain.Tweet
+	var tweets []domain.Tweet
+	for _, hit := range response.Hits.Hits {
+		var tweet domain.Tweet
+		err := json.Unmarshal(hit.Source, &tweet)
+		if err != nil {
+			log.Printf("Error unmarshaling tweet: %s", err)
+			continue
+		}
+		tweets = append(tweets, tweet)
+	}
+
+	log.Println(tweets)
 
 	return nil, nil
 
@@ -196,4 +196,41 @@ func (repository *TweetElasticStoreImpl) CheckIndex() error {
 		}
 	}
 	return nil
+}
+
+func (repository *TweetElasticStoreImpl) Search(search domain.Search) ([]*domain.Tweet, error) {
+
+	var tweets []*domain.Tweet
+
+	// Create the bool query with should clauses for each search string
+	boolQuery := elastic.NewBoolQuery()
+	for i, str := range search.SearchSTRs {
+		matchQuery := elastic.NewMatchPhraseQuery(search.Fields[i], str)
+		boolQuery = boolQuery.Should(matchQuery)
+	}
+
+	// Build the search request with the bool query
+	searchResult, err := repository.olivereElastic.Search().
+		Index("tweets"). // Index to search in
+		Query(boolQuery).
+		Do(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("error executing the search: %w", err)
+	}
+
+	// Process the search results
+	for _, hit := range searchResult.Hits.Hits {
+		var tweet domain.Tweet
+		err := json.Unmarshal(hit.Source, &tweet)
+		if err != nil {
+			log.Printf("error unmarshaling tweet: %s", err)
+			continue
+		}
+		tweets = append(tweets, &tweet)
+	}
+
+	log.Println(tweets)
+
+	return tweets, nil
+
 }
