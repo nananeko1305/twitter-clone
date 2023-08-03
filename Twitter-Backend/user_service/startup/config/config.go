@@ -13,6 +13,7 @@ type Config struct {
 	CreateUserCommandSubject string
 	CreateUserReplySubject   string
 	JaegerAddress            string
+	ELASTICSEARCH_HOSTS      string
 }
 
 func NewConfig() *Config {
@@ -27,5 +28,6 @@ func NewConfig() *Config {
 		CreateUserCommandSubject: os.Getenv("CREATE_USER_COMMAND_SUBJECT"),
 		CreateUserReplySubject:   os.Getenv("CREATE_USER_REPLY_SUBJECT"),
 		JaegerAddress:            os.Getenv("JAEGER_ADDRESS"),
+		ELASTICSEARCH_HOSTS:      os.Getenv("ELASTICSEARCH_HOSTS"),
 	}
 }

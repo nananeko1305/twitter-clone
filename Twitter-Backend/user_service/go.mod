@@ -6,7 +6,7 @@ require (
 	github.com/casbin/casbin v1.9.1
 	github.com/cristalhq/jwt/v4 v4.0.2
 	github.com/gorilla/mux v1.8.0
-	github.com/sirupsen/logrus v1.9.0
+	github.com/olivere/elastic/v7 v7.0.32
 	github.com/zjalicf/twitter-clone-common/common v0.0.0-20230119211805-4db3ea2db008
 	go.mongodb.org/mongo-driver v1.11.1
 	go.opentelemetry.io/otel v1.11.2
@@ -20,7 +20,9 @@ require (
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.14 // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.7.0 // indirect
 	github.com/nats-io/jwt/v2 v2.3.0 // indirect

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"user_service/application"
 	"user_service/authorization"
+	"user_service/domain"
 	"user_service/errors"
 
 	"github.com/casbin/casbin"
@@ -52,6 +53,7 @@ func (handler *UserHandler) Init(router *mux.Router) {
 	router.HandleFunc("/getMe/", handler.GetMe).Methods("GET")
 	router.HandleFunc("/mailExist/{mail}", handler.MailExist).Methods("GET")
 	router.HandleFunc("/visibility", handler.ChangeVisibility).Methods("PUT")
+	router.HandleFunc("/search", handler.Search).Methods("POST")
 	http.Handle("/", router)
 	log.Fatal(http.ListenAndServe(":8002", authorization.Authorizer(authEnforcer)(router)))
 }
@@ -205,4 +207,35 @@ func ExtractTraceInfoMiddleware(next http.Handler) http.Handler {
 		ctx := otel.GetTextMapPropagator().Extract(r.Context(), propagation.HeaderCarrier(r.Header))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func (handler *UserHandler) Search(writer http.ResponseWriter, req *http.Request) {
+
+	var search domain.Search
+
+	err := json.NewDecoder(req.Body).Decode(&search)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+	users, err := handler.service.Search(search)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+	jsonData, err := json.Marshal(&users)
+	if err != nil {
+		writer.WriteHeader(http.StatusInternalServerError)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	writer.Write(jsonData)
+
 }

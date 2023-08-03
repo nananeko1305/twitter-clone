@@ -206,7 +206,7 @@ func (repository *TweetElasticStoreImpl) Search(search domain.Search) ([]*domain
 	boolQuery := elastic.NewBoolQuery()
 	for i, str := range search.SearchSTRs {
 		matchQuery := elastic.NewMatchPhraseQuery(search.Fields[i], str)
-		boolQuery = boolQuery.Should(matchQuery)
+		boolQuery = boolQuery.Must(matchQuery)
 	}
 
 	// Build the search request with the bool query

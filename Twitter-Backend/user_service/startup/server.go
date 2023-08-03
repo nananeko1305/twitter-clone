@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/olivere/elastic/v7"
 	saga "github.com/zjalicf/twitter-clone-common/common/saga/messaging"
 	"github.com/zjalicf/twitter-clone-common/common/saga/messaging/nats"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -42,6 +43,13 @@ func NewServer(config *config.Config) *Server {
 
 func (server *Server) Start() {
 
+	client, err := elastic.NewClient(
+		elastic.SetURL(server.config.ELASTICSEARCH_HOSTS),
+	)
+	if err != nil {
+		return
+	}
+
 	mongoClient := server.initMongoClient()
 	defer func(mongoClient *mongo.Client, ctx context.Context) {
 		err := mongoClient.Disconnect(ctx)
@@ -67,8 +75,10 @@ func (server *Server) Start() {
 	otel.SetTracerProvider(tp)
 	tracer := tp.Tracer("user_service")
 
+	userElasticStore := server.initUserElasticStore(client)
+	userElasticStore.CheckIndex()
 	userStore := server.initUserStore(mongoClient, tracer)
-	userService := server.initUserService(userStore, tracer)
+	userService := server.initUserService(userStore, userElasticStore, tracer)
 	userHandler := server.initUserHandler(userService, tracer)
 
 	server.initCreateUserHandler(userService, replyPublisher, commandSubscriber, tracer)
@@ -81,8 +91,13 @@ func (server *Server) initUserStore(client *mongo.Client, tracer trace.Tracer) d
 	return userStore
 }
 
-func (server *Server) initUserService(store domain.UserStore, tracer trace.Tracer) *application.UserService {
-	return application.NewUserService(store, tracer)
+func (server *Server) initUserElasticStore(client *elastic.Client) domain.UserElasticStore {
+	userElasticStore := store.NewUserElasticStoreImpl(client)
+	return userElasticStore
+}
+
+func (server *Server) initUserService(store domain.UserStore, olivereElastic domain.UserElasticStore, tracer trace.Tracer) *application.UserService {
+	return application.NewUserService(store, olivereElastic, tracer)
 }
 
 func (server *Server) initUserHandler(service *application.UserService, tracer trace.Tracer) *handlers.UserHandler {

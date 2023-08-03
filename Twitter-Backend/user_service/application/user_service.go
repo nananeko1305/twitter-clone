@@ -12,14 +12,16 @@ import (
 )
 
 type UserService struct {
-	store  domain.UserStore
-	tracer trace.Tracer
+	store          domain.UserStore
+	tracer         trace.Tracer
+	olivereElastic domain.UserElasticStore
 }
 
-func NewUserService(store domain.UserStore, tracer trace.Tracer) *UserService {
+func NewUserService(store domain.UserStore, olivereElastic domain.UserElasticStore, tracer trace.Tracer) *UserService {
 	return &UserService{
-		store:  store,
-		tracer: tracer,
+		store:          store,
+		tracer:         tracer,
+		olivereElastic: olivereElastic,
 	}
 }
 
@@ -82,6 +84,13 @@ func (service *UserService) Register(ctx context.Context, user *domain.User) (*d
 	if err != nil {
 		log.Println(errors.DatabaseError)
 		return nil, fmt.Errorf(errors.DatabaseError)
+	}
+
+	if retUser.UserType != "Admin" {
+		err = service.olivereElastic.Post(*retUser)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return retUser, nil
@@ -194,4 +203,18 @@ func (service *UserService) UserToDomain(userIn create_user.User) domain.User {
 	user.Website = userIn.Website
 
 	return user
+}
+
+// Elasticsearch
+
+//func (service *UserService) Test(username string) ([]*domain.User, error) {
+//	return service.olivereElastic.
+//}
+
+func (service *UserService) CheckIndex() {
+	service.olivereElastic.CheckIndex()
+}
+
+func (service *UserService) Search(search domain.Search) ([]*domain.User, error) {
+	return service.olivereElastic.Search(search)
 }

@@ -9,4 +9,6 @@ p, Business, /visibility, PUT
 p, NotLoggedIn, /*, POST
 p, NotLoggedIn, /mailExist/*, GET
 p, NotLoggedIn, /*, GET
+p, Regular, /search, POST
+
 

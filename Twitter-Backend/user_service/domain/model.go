@@ -29,6 +29,11 @@ const (
 
 type UserType string
 
+type Search struct {
+	SearchSTRs []string `json:"search_st_rs"`
+	Fields     []string `json:"fields"`
+}
+
 const (
 	Regular  = "Regular"
 	Business = "Business"
