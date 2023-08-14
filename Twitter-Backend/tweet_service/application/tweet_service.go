@@ -148,7 +148,6 @@ func (service *TweetService) Post(ctx context.Context, tweet *domain.Tweet, user
 
 	tweet.Image = false
 	if len(*image) != 0 {
-		log.Printf("USLO U SLIKU")
 		err := service.saveImage(ctx, tweet.ID, *image)
 		if err != nil {
 			return nil, err

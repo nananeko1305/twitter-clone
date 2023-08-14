@@ -16,6 +16,7 @@ type Tweet struct {
 	OwnerUsername string     `json:"owner_username"`
 	Image         bool       `json:"image"`
 	Advertisement bool       `json:"advertisement"`
+	Hashtags      []string   `json:"hashtags"`
 }
 
 type AdConfig struct {

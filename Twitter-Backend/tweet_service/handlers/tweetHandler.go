@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -180,82 +178,87 @@ func (handler *TweetHandler) Favorite(writer http.ResponseWriter, req *http.Requ
 }
 
 func (handler *TweetHandler) Post(writer http.ResponseWriter, req *http.Request) {
-	ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.Post")
-	defer span.End()
-
-	err := req.ParseMultipartForm(32 << 20)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	strs := strings.Split(req.Header.Get("Content-Type"), "; boundary")
-
-	if strs[0] != "multipart/form-data" {
-		log.Println("Invalid Content-Type")
-		http.Error(writer, "Invalid Content-Type", http.StatusBadRequest)
-		return
-	}
-
-	file, _, err := req.FormFile("image")
-
-	var imageBytes []byte
-	if err == nil {
-		bytes, err := ioutil.ReadAll(file)
-		if err != nil {
-			fmt.Fprintln(writer, "Error reading image:", err)
-			http.Error(writer, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		imageBytes = bytes
-		defer file.Close()
-	}
+	//ctx, span := handler.tracer.Start(req.Context(), "TweetHandler.Post")
+	//defer span.End()
+	//
+	//err := req.ParseMultipartForm(32 << 20)
+	//if err != nil {
+	//	log.Println(err)
+	//	return
+	//}
+	//
+	//strs := strings.Split(req.Header.Get("Content-Type"), "; boundary")
+	//
+	//if strs[0] != "multipart/form-data" {
+	//	log.Println("Invalid Content-Type")
+	//	http.Error(writer, "Invalid Content-Type", http.StatusBadRequest)
+	//	return
+	//}
+	//
+	//file, _, err := req.FormFile("image")
+	//
+	//var imageBytes []byte
+	//if err == nil {
+	//	bytes, err := ioutil.ReadAll(file)
+	//	if err != nil {
+	//		fmt.Fprintln(writer, "Error reading image:", err)
+	//		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	//		return
+	//	}
+	//	imageBytes = bytes
+	//	defer file.Close()
+	//}
 
 	tweet := req.FormValue("json")
 
+	log.Println(tweet)
+
 	//json without AdConfig
 	var tweetVal domain.Tweet
-	err = json.Unmarshal([]byte(tweet), &tweetVal)
+	err := json.Unmarshal([]byte(tweet), &tweetVal)
 	if err != nil {
-		log.Printf("Error in TweetHandler.Post unmarshal json 1")
-	}
-
-	//json with AdConfig
-	var tweetAdVal domain.AdTweet
-	err = json.Unmarshal([]byte(tweet), &tweetAdVal)
-	if err != nil {
-		log.Printf("Error in TweetHandler.Post unmarshal json 2")
-	}
-
-	if err != nil {
-		http.Error(writer, "bad json format", http.StatusBadRequest)
-
-	}
-
-	//sta dalje?
-
-	if req.Header.Get("Authorization") == "" {
-		writer.WriteHeader(http.StatusUnauthorized)
+		writer.WriteHeader(http.StatusInternalServerError)
+		log.Printf("Error in TweetHandler.Post unmarshal json 1", err)
 		return
 	}
-
-	bearerToken := strings.Split(req.Header.Get("Authorization"), "Bearer ")
-	tokenString := bearerToken[1]
-	token := authorization.GetToken(tokenString)
-
-	claims := authorization.GetMapClaims(token.Bytes())
-	username := claims["username"]
-
-	//dodati adve
-	ret, err := handler.service.Post(ctx, &tweetVal, username, &imageBytes)
-
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	writer.WriteHeader(http.StatusOK)
-	jsonResponse(ret, writer)
+	log.Println(tweetVal)
+	//
+	////json with AdConfig
+	//var tweetAdVal domain.AdTweet
+	//err = json.Unmarshal([]byte(tweet), &tweetAdVal)
+	//if err != nil {
+	//	log.Printf("Error in TweetHandler.Post unmarshal json 2")
+	//}
+	//
+	//if err != nil {
+	//	http.Error(writer, "bad json format", http.StatusBadRequest)
+	//
+	//}
+	//
+	////sta dalje?
+	//
+	//if req.Header.Get("Authorization") == "" {
+	//	writer.WriteHeader(http.StatusUnauthorized)
+	//	return
+	//}
+	//
+	//bearerToken := strings.Split(req.Header.Get("Authorization"), "Bearer ")
+	//tokenString := bearerToken[1]
+	//token := authorization.GetToken(tokenString)
+	//
+	//claims := authorization.GetMapClaims(token.Bytes())
+	//username := claims["username"]
+	//
+	////dodati adve
+	//ret, err := handler.service.Post(ctx, &tweetVal, username, &imageBytes)
+	//
+	//if err != nil {
+	//	http.Error(writer, err.Error(), http.StatusBadRequest)
+	//	return
+	//}
+	//
+	//writer.WriteHeader(http.StatusOK)
+	//jsonResponse(ret, writer)
 }
 
 func (handler *TweetHandler) GetTweetImage(writer http.ResponseWriter, req *http.Request) {

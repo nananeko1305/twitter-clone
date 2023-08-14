@@ -67,19 +67,39 @@ func (sr *TweetRepo) CloseSession() {
 
 func (sr *TweetRepo) CreateTables() {
 	err := sr.session.Query(
-		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s
-					(id UUID, text text, created_at time, favorited boolean, favorite_count int, retweeted boolean,
-					retweet_count int, username text, owner_username text, image boolean, advertisement boolean,
-					PRIMARY KEY ((id), created_at))
-					WITH CLUSTERING ORDER BY (created_at DESC)`, //for now there is no clustering order!!
+		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+        id UUID,
+        text text,
+        created_at timestamp,
+        favorited boolean,
+        favorite_count int,
+        retweeted boolean,
+        retweet_count int,
+        username text,
+        owner_username text,
+        image boolean,
+        advertisement boolean,
+        hashtags set<text>,
+        PRIMARY KEY ((id), created_at))
+        WITH CLUSTERING ORDER BY (created_at DESC)`, //for now there is no clustering order!!
 			COLLECTION)).Exec()
 
 	err = sr.session.Query(
-		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s
-					(id UUID, text text, created_at time, favorited boolean, favorite_count int, retweeted boolean,
-					retweet_count int, username text, owner_username text, image boolean, advertisement boolean,
-					PRIMARY KEY ((username), created_at, id))
-					WITH CLUSTERING ORDER BY (created_at DESC)`, //clustering key by creating date and pk for tweet id and user_id
+		fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+        id UUID,
+        text text,
+        created_at timestamp,
+        favorited boolean,
+        favorite_count int,
+        retweeted boolean,
+        retweet_count int,
+        username text,
+        owner_username text,
+        image boolean,
+        advertisement boolean,
+        hashtags set<text>,
+        PRIMARY KEY ((username), created_at, id))
+        WITH CLUSTERING ORDER BY (created_at DESC)`, //clustering key by creating date and pk for tweet id and user_id
 			COLLECTION_BY_USER)).Exec()
 
 	err = sr.session.Query(
