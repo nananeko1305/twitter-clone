@@ -357,6 +357,8 @@ func (handler *TweetHandler) Search(writer http.ResponseWriter, req *http.Reques
 		return
 	}
 
+	log.Println(search)
+
 	tweets, err := handler.service.Search(search)
 	if err != nil {
 		writer.WriteHeader(http.StatusInternalServerError)

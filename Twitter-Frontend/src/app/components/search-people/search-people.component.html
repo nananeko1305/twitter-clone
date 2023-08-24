@@ -1,15 +1,43 @@
+<div class="main-div container-fluid">
 
-<div class="col-3" style="margin: 1% auto 3%;">
-  <div class="text-center">
-    <h1 style="font-size: 36px">Find people on Twitter</h1>
+  <!--Text-->
+  <div class="row mt-2">
+    <h1>Find people on Twitter</h1>
   </div>
-</div>
 
-<form [formGroup]="formGroup">
-  <div class="col-2" style="margin-left: auto; margin-right: auto; margin-top: 1%;">
-    <div class="input-group">
-      <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" formControlName="searchText"/>
-      <button type="button" class="btn btn-outline-primary" (click)="findPeople()">search</button>
+  <form [formGroup]="formGroup">
+
+    <div class="row select-search mb-3 d-flex align-items-center justify-content-center">
+
+      <div class="col-2">
+        <h4>Select search type:</h4>
+      </div>
+
+      <div class="col-2">
+        <select class="form-control rounded " formControlName="field">
+          <option value="default">Select:</option>
+          <option value="firstName">First name</option>
+          <option value="username">Username</option>
+        </select>
+      </div>
+
     </div>
+
+
+    <div class="input-group">
+
+      <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" [formControlName]="'search_str'"/>
+
+      <div class="input-group-append">
+        <button type="button" class="btn btn-outline-primary" (click)="Search()">Search</button>
+      </div>
+
+    </div>
+
+  </form>
+
+  <div class="row mt-3">
+    <app-user-list [users]="this.users"></app-user-list>
   </div>
-</form>
+
+</div>

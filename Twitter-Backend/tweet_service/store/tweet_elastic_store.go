@@ -10,6 +10,7 @@ import (
 	"github.com/olivere/elastic/v7"
 	"io/ioutil"
 	"log"
+	"strconv"
 	"strings"
 	"tweet_service/domain"
 )
@@ -229,11 +230,23 @@ func (repository *TweetElasticStoreImpl) Search(search domain.Search) ([]*domain
 
 	var query elastic.Query
 
-	if search.SearchType == "fuzzy" {
-		query = elastic.NewFuzzyQuery(search.Field, search.SearchSTR).Fuzziness("2")
-	} else if search.SearchType == "match" {
+	switch search.SearchType {
+	case "fuzzy":
+		if search.Field == "favorite_count" {
+			numOfLikes, err := strconv.Atoi(search.SearchSTR)
+			if err != nil {
+				log.Fatal(err)
+			}
+			query = elastic.NewTermQuery(search.Field, numOfLikes)
+		} else if search.Field == "text" {
+			query = elastic.NewMatchPhrasePrefixQuery(search.Field, search.SearchSTR).
+				MaxExpansions(10) // Adjust this value as needed
+		} else {
+			query = elastic.NewFuzzyQuery(search.Field, search.SearchSTR).Fuzziness("2")
+		}
+	case "match":
 		query = elastic.NewMatchQuery(search.Field, search.SearchSTR)
-	} else {
+	default:
 		log.Fatal("Invalid search type specified")
 	}
 

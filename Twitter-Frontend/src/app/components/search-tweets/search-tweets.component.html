@@ -15,9 +15,11 @@
 
       <div class="col-2">
         <select class="form-control rounded " formControlName="field">
+          <option value="default">Select:</option>
           <option value="text">Text</option>
           <option value="hashtag">Hashtag</option>
-          <option value="likes">Number of likes</option>
+          <option value="username">Username</option>
+          <option value="favorite_count">Number of likes</option>
         </select>
       </div>
 
@@ -26,16 +28,21 @@
 
     <div class="input-group">
 
-      <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" formControlName="search_str"/>
+      <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" [formControlName]="'search_str'"/>
+
       <div class="input-group-append">
         <button type="button" class="btn btn-outline-primary" (click)="Search()">Search</button>
       </div>
+
     </div>
 
   </form>
 
+  <div class="row"  >
+    <app-tweet-list [tweets]="tweets" ></app-tweet-list>
+  </div>
 
 </div>
 
 
-<app-tweet-list [tweets]="tweets"></app-tweet-list>
+

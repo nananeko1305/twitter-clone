@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import {FormControl, FormGroup} from "@angular/forms";
+import {FormBuilder, FormControl, FormGroup} from "@angular/forms";
 import {Search} from "../../models/search";
+import {UserService} from "../../services/user.service";
+import {error} from "@angular/compiler-cli/src/transformers/util";
+import {User} from "../../models/user.model";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-search-people',
@@ -9,23 +13,52 @@ import {Search} from "../../models/search";
 })
 export class SearchPeopleComponent implements OnInit {
 
-  constructor() { }
+  //initialization of variables
+  formGroup: FormGroup;
+  users: User[];
+
+
+  constructor(
+    private formBuilder: FormBuilder,
+    private _snackBar: MatSnackBar,
+    private userService: UserService
+  ) {
+    this.formGroup = this.formBuilder.group({
+      field: ['default'],
+      search_str: [''],
+    });
+
+    this.users = []
+  }
 
   ngOnInit(): void {
   }
 
-  formGroup: FormGroup = new FormGroup({
-    searchText: new FormControl('')}
-  )
+  Search() {
+    //clear list
+    this.users = []
+    let search: Search = new Search()
+    search.search_str = this.formGroup.get('search_str')?.value
+    search.field = this.formGroup.get('field')?.value
+    search.search_type = "fuzzy"
 
-  findPeople() {
-
-    var search: Search = new Search()
-    search.search_str = this.formGroup.get('searchText')?.value
-
-    console.log(JSON.stringify(search))
+    this.userService.Search(search).subscribe({
+      next: (response: User[]) => {
+        if (response == null) {
+          this.openSnackBar("User not exist", "OK")
+        }else{
+          this.users = response
+        }
+      },
+      error:(err)=>{
+        console.log(err)
+      }
+    })
 
   }
 
+  openSnackBar(message: string, action: string) {
+    this._snackBar.open(message, action);
+  }
 
 }

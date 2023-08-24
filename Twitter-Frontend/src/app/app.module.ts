@@ -49,6 +49,8 @@ import { ReportListComponent } from './components/report/report-list/report-list
 import { ReportItemComponent } from './components/report/report-item/report-item.component';
 import { SearchPeopleComponent } from './components/search-people/search-people.component';
 import { SearchTweetsComponent } from './components/search-tweets/search-tweets.component';
+import { UserItemComponent } from './components/user/user-item/user-item.component';
+import { UserListComponent } from './components/user/user-list/user-list.component';
 
 
 @NgModule({
@@ -83,6 +85,8 @@ import { SearchTweetsComponent } from './components/search-tweets/search-tweets.
     ReportItemComponent,
     SearchPeopleComponent,
     SearchTweetsComponent,
+    UserItemComponent,
+    UserListComponent,
   ],
   imports: [
     BrowserModule,
