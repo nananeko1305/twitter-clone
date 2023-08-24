@@ -69,6 +69,7 @@ type FeedData struct {
 }
 
 type Search struct {
-	SearchSTRs []string `json:"search_st_rs"`
-	Fields     []string `json:"fields"`
+	SearchSTR  string `json:"search_str"`
+	Field      string `json:"field"`
+	SearchType string `json:"search_type"`
 }

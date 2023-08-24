@@ -1,11 +1,17 @@
 <mat-toolbar class="app-navbar" color="primary">
     <div class="right">
         <div>
-            <button *ngIf="isLoggedIn() && this.storageService.getRoleFromToken() != 'Admin'" aria-pressed="true" mat-button mat-ripple routerLink="/New-Tweet">
-                <span>Tweet</span>
+            <button *ngIf="isLoggedIn() && this.storageService.getRoleFromToken() != 'Admin'" aria-pressed="true" mat-button mat-ripple routerLink="/Search-Tweets">
+              <span>Search tweets</span>
+            </button>
+            <button *ngIf="isLoggedIn() && this.storageService.getRoleFromToken() != 'Admin'" aria-pressed="true" mat-button mat-ripple routerLink="/Search-People">
+              <span>Find people</span>
             </button>
             <button *ngIf="isLoggedIn() && this.storageService.getRoleFromToken() != 'Admin'" aria-pressed="true" mat-button mat-ripple routerLink="/Main-Page">
                 <span>Feed</span>
+            </button>
+            <button *ngIf="isLoggedIn() && this.storageService.getRoleFromToken() != 'Admin'" aria-pressed="true" mat-button mat-ripple routerLink="/New-Tweet">
+              <span>Create Tweet</span>
             </button>
             <button *ngIf="!isLoggedIn() && this.storageService.getRoleFromToken() != 'Admin'" aria-pressed="true" mat-button mat-ripple routerLink="/Register-Regular">
                 <span>Register</span>

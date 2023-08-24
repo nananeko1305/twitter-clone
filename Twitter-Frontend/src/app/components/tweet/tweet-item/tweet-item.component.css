@@ -52,3 +52,9 @@
   margin-left: 10px;
   color: green;
 }
+
+/* In your component's CSS */
+.hashtag {
+  color: #64a4ff; /* Or your desired color */
+  font-weight: bold;
+}

@@ -11,7 +11,9 @@
       <mat-card-title *ngIf="!this.isThatMeLoggedIn" class="tweet-user-username" [routerLink]="['/View-Profile', tweet.username]">{{tweet.username}}</mat-card-title>
     </mat-card-title>
     <div *ngIf="tweet.owner_username == '' || this.isFollowingOwner || this.isThatMeLoggedIn">
-      <mat-card-subtitle class="tweet-text" [routerLink]="['/View-Tweet', tweet.id]">{{tweet.text}}</mat-card-subtitle>
+      <mat-card-subtitle class="tweet-text" [routerLink]="['/View-Tweet', tweet.id]">
+        <span *ngFor="let word of tweet.text.split(' ')" [ngClass]="{'hashtag': word.startsWith('#')}">{{word}} </span>
+      </mat-card-subtitle>
       <img class="tweet-image" mat-card-image alt="twitter-logo-item" *ngIf="this.tweet.image" [src]="imagePath" [routerLink]="['/View-Tweet', tweet.id]">
     </div>
     <div *ngIf="tweet.owner_username != '' && !this.isFollowingOwner && !this.isThatMeLoggedIn">

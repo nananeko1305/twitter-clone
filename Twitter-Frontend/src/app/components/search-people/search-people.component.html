@@ -1,0 +1,15 @@
+
+<div class="col-3" style="margin: 1% auto 3%;">
+  <div class="text-center">
+    <h1 style="font-size: 36px">Find people on Twitter</h1>
+  </div>
+</div>
+
+<form [formGroup]="formGroup">
+  <div class="col-2" style="margin-left: auto; margin-right: auto; margin-top: 1%;">
+    <div class="input-group">
+      <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" formControlName="searchText"/>
+      <button type="button" class="btn btn-outline-primary" (click)="findPeople()">search</button>
+    </div>
+  </div>
+</form>

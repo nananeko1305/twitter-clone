@@ -1,0 +1,41 @@
+<div class="main-div container-fluid">
+
+  <!--Text-->
+  <div class="row mt-2">
+    <h1>Search tweets</h1>
+  </div>
+
+  <form [formGroup]="formGroup">
+
+    <div class="row select-search mb-3 d-flex align-items-center justify-content-center">
+
+      <div class="col-2">
+        <h4>Select search type:</h4>
+      </div>
+
+      <div class="col-2">
+        <select class="form-control rounded " formControlName="field">
+          <option value="text">Text</option>
+          <option value="hashtag">Hashtag</option>
+          <option value="likes">Number of likes</option>
+        </select>
+      </div>
+
+    </div>
+
+
+    <div class="input-group">
+
+      <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" formControlName="search_str"/>
+      <div class="input-group-append">
+        <button type="button" class="btn btn-outline-primary" (click)="Search()">Search</button>
+      </div>
+    </div>
+
+  </form>
+
+
+</div>
+
+
+<app-tweet-list [tweets]="tweets"></app-tweet-list>

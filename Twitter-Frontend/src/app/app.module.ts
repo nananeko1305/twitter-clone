@@ -47,6 +47,8 @@ import { FollowingComponentDialogComponent } from './components/following-compon
 import { ReportDialogComponent } from './components/report-dialog/report-dialog.component';
 import { ReportListComponent } from './components/report/report-list/report-list.component';
 import { ReportItemComponent } from './components/report/report-item/report-item.component';
+import { SearchPeopleComponent } from './components/search-people/search-people.component';
+import { SearchTweetsComponent } from './components/search-tweets/search-tweets.component';
 
 
 @NgModule({
@@ -79,6 +81,8 @@ import { ReportItemComponent } from './components/report/report-item/report-item
     ReportDialogComponent,
     ReportListComponent,
     ReportItemComponent,
+    SearchPeopleComponent,
+    SearchTweetsComponent,
   ],
   imports: [
     BrowserModule,
