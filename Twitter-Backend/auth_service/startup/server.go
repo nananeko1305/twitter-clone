@@ -7,12 +7,14 @@ import (
 	"auth_service/startup/config"
 	store2 "auth_service/store"
 	"context"
+	firebase "firebase.google.com/go"
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	saga "github.com/zjalicf/twitter-clone-common/common/saga/messaging"
 	"github.com/zjalicf/twitter-clone-common/common/saga/messaging/nats"
 	"go.mongodb.org/mongo-driver/mongo"
+	"google.golang.org/api/option"
 	"log"
 	"net/http"
 	"os"
@@ -36,6 +38,13 @@ func NewServer(config *config.Config) *Server {
 }
 
 func (server *Server) Start() {
+
+	//firebase client
+	//firebaseClient, err := server.initFirebaseCloudMessaging()
+	//if err != nil {
+	//	log.Println(err)
+	//	return
+	//}
 
 	mongoClient := server.initMongoClient()
 	defer func(mongoClient *mongo.Client, ctx context.Context) {
@@ -138,6 +147,18 @@ func (server *Server) initCreateUserHandler(service *application.AuthService, pu
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (server *Server) initFirebaseCloudMessaging() (*firebase.App, error) {
+
+	opt := option.WithCredentialsFile("firebase_key.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing app: %v", err)
+	}
+
+	return app, nil
+
 }
 
 // start
