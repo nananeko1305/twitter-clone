@@ -51,7 +51,8 @@ import { SearchPeopleComponent } from './components/search-people/search-people.
 import { SearchTweetsComponent } from './components/search-tweets/search-tweets.component';
 import { UserItemComponent } from './components/user/user-item/user-item.component';
 import { UserListComponent } from './components/user/user-list/user-list.component';
-
+import {AngularFireModule} from "@angular/fire/compat";
+import {environment} from "../environments/environment";
 
 @NgModule({
   declarations: [
@@ -109,6 +110,7 @@ import { UserListComponent } from './components/user/user-list/user-list.compone
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    AngularFireModule.initializeApp(environment.firebaseConfig)
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,
@@ -117,4 +119,4 @@ import { UserListComponent } from './components/user/user-list/user-list.compone
   }],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}

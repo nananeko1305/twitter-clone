@@ -12,6 +12,7 @@
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,

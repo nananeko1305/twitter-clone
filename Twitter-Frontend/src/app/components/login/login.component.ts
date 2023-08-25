@@ -7,6 +7,7 @@ import { LoginDTO } from 'src/app/dto/loginDTO';
 import { AuthService } from 'src/app/services/auth.service';
 import { VerificationService } from 'src/app/services/verify.service';
 import {StorageService} from "../../services/storage.service";
+import {AngularFireMessaging} from "@angular/fire/compat/messaging";
 
 @Component({
   selector: 'app-login',
@@ -25,7 +26,8 @@ export class LoginComponent implements OnInit {
     private formBuilder: FormBuilder,
     private verificationService: VerificationService,
     private _snackBar: MatSnackBar,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private afMessaging: AngularFireMessaging
   ) { }
 
   submitted = false;
@@ -42,7 +44,7 @@ export class LoginComponent implements OnInit {
     return this.formGroup.controls;
   }
 
-  onSubmit() {
+  async onSubmit() {
     this.submitted = true;
 
     if (this.formGroup.invalid) {
@@ -54,15 +56,17 @@ export class LoginComponent implements OnInit {
     login.username = this.formGroup.get('username')?.value;
     login.password = this.formGroup.get('password')?.value;
 
+    //generating FMC token for current device
+
     this.authService.Login(login)
       .subscribe({
         next: (token: string) => {
           localStorage.setItem('authToken', token);
           if (this.storageService.getRoleFromToken() == 'Admin') {
-            this.router.navigate(['/Reports']);
+            this.router.navigate(['/Reports']).then();
             return
           }
-          this.router.navigate(['/Main-Page']);
+          this.router.navigate(['/Main-Page']).then();
         },
         error: (error: HttpErrorResponse) => {
           if (error.status == 423) {
@@ -70,7 +74,7 @@ export class LoginComponent implements OnInit {
             let snackBarMessage = "Your account is locked, because you didn't verify over Email." + " " + "We have sent an email with a token." + " " + "You have been redirected to the verification page."
             this.openSnackBar(snackBarMessage, "Ok")
             this.verificationService.updateVerificationToken(id);
-            this.router.navigate(['/Verify-Account']);
+            this.router.navigate(['/Verify-Account']).then();
 
           }else{
             this.formGroup.setErrors({ unauthenticated: true });
@@ -78,6 +82,12 @@ export class LoginComponent implements OnInit {
 
         }
       });
+
+    this.afMessaging.getToken.subscribe(
+      (token) => {
+          console.log(token)
+      }
+    )
   }
 
   openSnackBar(message: string, action: string) {
