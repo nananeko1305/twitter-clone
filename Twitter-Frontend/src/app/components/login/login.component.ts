@@ -7,7 +7,7 @@ import { LoginDTO } from 'src/app/dto/loginDTO';
 import { AuthService } from 'src/app/services/auth.service';
 import { VerificationService } from 'src/app/services/verify.service';
 import {StorageService} from "../../services/storage.service";
-import {AngularFireMessaging} from "@angular/fire/compat/messaging";
+import {AngularFireMessaging} from "@angular/fire/messaging";
 
 @Component({
   selector: 'app-login',
