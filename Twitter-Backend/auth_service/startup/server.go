@@ -8,6 +8,7 @@ import (
 	store2 "auth_service/store"
 	"context"
 	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
@@ -39,12 +40,11 @@ func NewServer(config *config.Config) *Server {
 
 func (server *Server) Start() {
 
-	//firebase client
-	//firebaseClient, err := server.initFirebaseCloudMessaging()
-	//if err != nil {
-	//	log.Println(err)
-	//	return
-	//}
+	firebaseClient, err := server.initFirebaseCloudMessaging()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	mongoClient := server.initMongoClient()
 	defer func(mongoClient *mongo.Client, ctx context.Context) {
@@ -70,7 +70,7 @@ func (server *Server) Start() {
 
 	createUserOrchestrator := server.initCreateUserOrchestrator(commandPublisher, replySubscriber)
 
-	authService := server.initAuthService(authStore, authCache, createUserOrchestrator)
+	authService := server.initAuthService(authStore, authCache, createUserOrchestrator, firebaseClient)
 
 	server.initCreateUserHandler(authService, replyPublisher, commandSubscriber)
 	authHandler := server.initAuthHandler(authService)
@@ -104,8 +104,8 @@ func (server *Server) initAuthCache(client *redis.Client) domain.AuthCache {
 	return cache
 }
 
-func (server *Server) initAuthService(store domain.AuthStore, cache domain.AuthCache, orchestrator *application.CreateUserOrchestrator) *application.AuthService {
-	return application.NewAuthService(store, cache, orchestrator)
+func (server *Server) initAuthService(store domain.AuthStore, cache domain.AuthCache, orchestrator *application.CreateUserOrchestrator, firebaseClient *messaging.Client) *application.AuthService {
+	return application.NewAuthService(store, cache, orchestrator, firebaseClient)
 }
 
 func (server *Server) initAuthHandler(service *application.AuthService) *handlers.AuthHandler {
@@ -149,16 +149,19 @@ func (server *Server) initCreateUserHandler(service *application.AuthService, pu
 	}
 }
 
-func (server *Server) initFirebaseCloudMessaging() (*firebase.App, error) {
-
+func (server *Server) initFirebaseCloudMessaging() (*messaging.Client, error) {
 	opt := option.WithCredentialsFile("firebase_key.json")
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing app: %v", err)
 	}
 
-	return app, nil
+	client, err := app.Messaging(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("error initializing messaging client: %v", err)
+	}
 
+	return client, nil
 }
 
 // start

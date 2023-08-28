@@ -53,6 +53,8 @@ import { UserItemComponent } from './components/user/user-item/user-item.compone
 import { UserListComponent } from './components/user/user-list/user-list.component';
 import {AngularFireModule} from "@angular/fire/compat";
 import {environment} from "../environments/environment";
+import {AngularFireMessaging} from "@angular/fire/compat/messaging";
+
 
 @NgModule({
   declarations: [
@@ -110,7 +112,7 @@ import {environment} from "../environments/environment";
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    AngularFireModule.initializeApp(environment.firebaseConfig)
+    AngularFireModule.initializeApp(environment.firebaseConfig),
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,

@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"firebase.google.com/go/messaging"
 	"fmt"
 	"github.com/cristalhq/jwt/v4"
 	"github.com/google/uuid"
@@ -32,16 +33,18 @@ var (
 )
 
 type AuthService struct {
-	store        domain.AuthStore
-	cache        domain.AuthCache
-	orchestrator *CreateUserOrchestrator
+	store          domain.AuthStore
+	cache          domain.AuthCache
+	orchestrator   *CreateUserOrchestrator
+	firebaseClient *messaging.Client
 }
 
-func NewAuthService(store domain.AuthStore, cache domain.AuthCache, orchestrator *CreateUserOrchestrator) *AuthService {
+func NewAuthService(store domain.AuthStore, cache domain.AuthCache, orchestrator *CreateUserOrchestrator, firebaseClient *messaging.Client) *AuthService {
 	return &AuthService{
-		store:        store,
-		cache:        cache,
-		orchestrator: orchestrator,
+		store:          store,
+		cache:          cache,
+		orchestrator:   orchestrator,
+		firebaseClient: firebaseClient,
 	}
 }
 
@@ -349,6 +352,8 @@ func (service *AuthService) Login(ctx context.Context, credentials *domain.Crede
 		return "", err
 	}
 
+	service.sendNotificationToDevice()
+
 	return tokenString, nil
 }
 
@@ -555,4 +560,23 @@ func checkBlackList(username string) (bool, error) {
 	} else {
 		return false, nil
 	}
+}
+
+func (service *AuthService) sendNotificationToDevice() error {
+
+	message := &messaging.Message{
+		Token: "eMA9fiRL1GUK82vDU-HebC:APA91bEsVcg4TuzFXizjuaQdG-1tC8KKArcUZzW5yHTvE0NZK3XsUpjfYRKl-DVnVuOt95RzsW6NeHaEOIaOQSVhOIAqz30blbmQ5bvbjhIo1MjH_1BJKm5jBMoA0pzrNp1ra3OJCgHk",
+		Notification: &messaging.Notification{
+			Title: "TITLE",
+			Body:  "Hello, this is test notification for you!",
+		},
+	}
+
+	_, err := service.firebaseClient.Send(context.Background(), message)
+	if err != nil {
+		return fmt.Errorf("error sending message: %v", err)
+	}
+	log.Println("Message sent")
+
+	return nil
 }

@@ -70,7 +70,7 @@
           "options": {
             "sslKey": "../Twitter-Backend/api_gateway/cert/twitter.key",
             "sslCert": "../Twitter-Backend/api_gateway/cert/twitter.crt",
-            "ssl": true
+            "ssl": false
           },
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {

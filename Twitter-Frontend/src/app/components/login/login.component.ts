@@ -7,7 +7,6 @@ import { LoginDTO } from 'src/app/dto/loginDTO';
 import { AuthService } from 'src/app/services/auth.service';
 import { VerificationService } from 'src/app/services/verify.service';
 import {StorageService} from "../../services/storage.service";
-import {AngularFireMessaging} from "@angular/fire/messaging";
 
 @Component({
   selector: 'app-login',
@@ -27,7 +26,6 @@ export class LoginComponent implements OnInit {
     private verificationService: VerificationService,
     private _snackBar: MatSnackBar,
     private storageService: StorageService,
-    private afMessaging: AngularFireMessaging
   ) { }
 
   submitted = false;
@@ -83,11 +81,6 @@ export class LoginComponent implements OnInit {
         }
       });
 
-    this.afMessaging.getToken.subscribe(
-      (token) => {
-          console.log(token)
-      }
-    )
   }
 
   openSnackBar(message: string, action: string) {
