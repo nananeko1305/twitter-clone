@@ -132,6 +132,8 @@ services:
       NATS_PASS: ${NATS_PASS}
       CREATE_USER_COMMAND_SUBJECT: ${CREATE_USER_COMMAND_SUBJECT}
       CREATE_USER_REPLY_SUBJECT: ${CREATE_USER_REPLY_SUBJECT}
+      GET_FCM_TOKEN : ${GET_FCM_TOKEN}
+      NATS_URI: ${NATS_URI}
     depends_on:
       - follow_db
       - jaeger
