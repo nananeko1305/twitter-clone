@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {AngularFireMessaging} from "@angular/fire/compat/messaging";
+import { SwPush } from '@angular/service-worker';
 
 @Component({
   selector: 'app-root',
@@ -10,10 +11,10 @@ export class AppComponent implements OnInit {
 
   constructor(
     private angularMessaging: AngularFireMessaging,
+    private swPush: SwPush
   ) {}
 
   ngOnInit() {
-
 
 
 
@@ -28,10 +29,26 @@ export class AppComponent implements OnInit {
     })
 
     this.angularMessaging.messages.subscribe(message => {
-      // Ovde možete upravljati primljenim obaveštenjem
-      console.log('Primljeno push obaveštenje:', message);
-    });
 
+      console.log(message)
+      console.log(this.swPush.isEnabled)
+
+      if (!this.swPush.isEnabled) {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            const notification = new Notification('Primljeno obaveštenje', {
+              body: message.notification?.body
+            });
+
+            notification.onclick = event => {
+              event.preventDefault();
+              // Ovde možete upravljati akcijom kada korisnik klikne na notifikaciju
+            };
+          }
+        });
+      }
+
+    });
   }
 }
 

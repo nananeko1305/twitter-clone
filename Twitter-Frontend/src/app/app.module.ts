@@ -54,6 +54,7 @@ import { UserListComponent } from './components/user/user-list/user-list.compone
 import {AngularFireModule} from "@angular/fire/compat";
 import {environment} from "../environments/environment";
 import {AngularFireMessagingModule} from "@angular/fire/compat/messaging";
+import {ServiceWorkerModule, SwPush} from "@angular/service-worker";
 
 
 @NgModule({
@@ -113,7 +114,8 @@ import {AngularFireMessagingModule} from "@angular/fire/compat/messaging";
     MatDatepickerModule,
     MatNativeDateModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFireMessagingModule
+    AngularFireMessagingModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,

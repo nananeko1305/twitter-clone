@@ -24,8 +24,7 @@ messaging.onBackgroundMessage((payload) => {
     body: 'Test',
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions)
+  // self.registration.showNotification(notificationTitle, notificationOptions)
 });
-
 
 console.log("Script started")

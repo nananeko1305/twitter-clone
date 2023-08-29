@@ -22,7 +22,7 @@
     "@angular/platform-browser-dynamic": "^14.1.0",
     "@angular/pwa": "^0.5.3",
     "@angular/router": "^14.1.0",
-    "@angular/service-worker": "^16.2.2",
+    "@angular/service-worker": "^14.3.0",
     "@material/dialog": "^14.0.0",
     "@material/snackbar": "^14.0.0",
     "add": "^2.0.6",
