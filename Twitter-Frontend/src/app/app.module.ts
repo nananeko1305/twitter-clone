@@ -47,6 +47,14 @@ import { FollowingComponentDialogComponent } from './components/following-compon
 import { ReportDialogComponent } from './components/report-dialog/report-dialog.component';
 import { ReportListComponent } from './components/report/report-list/report-list.component';
 import { ReportItemComponent } from './components/report/report-item/report-item.component';
+import { SearchPeopleComponent } from './components/search-people/search-people.component';
+import { SearchTweetsComponent } from './components/search-tweets/search-tweets.component';
+import { UserItemComponent } from './components/user/user-item/user-item.component';
+import { UserListComponent } from './components/user/user-list/user-list.component';
+import {AngularFireModule} from "@angular/fire/compat";
+import {environment} from "../environments/environment";
+import {AngularFireMessagingModule} from "@angular/fire/compat/messaging";
+import {ServiceWorkerModule, SwPush} from "@angular/service-worker";
 
 
 @NgModule({
@@ -79,6 +87,10 @@ import { ReportItemComponent } from './components/report/report-item/report-item
     ReportDialogComponent,
     ReportListComponent,
     ReportItemComponent,
+    SearchPeopleComponent,
+    SearchTweetsComponent,
+    UserItemComponent,
+    UserListComponent,
   ],
   imports: [
     BrowserModule,
@@ -101,6 +113,9 @@ import { ReportItemComponent } from './components/report/report-item/report-item
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFireMessagingModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,
@@ -109,4 +124,4 @@ import { ReportItemComponent } from './components/report/report-item/report-item
   }],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}

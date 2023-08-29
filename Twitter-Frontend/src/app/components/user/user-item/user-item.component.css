@@ -1,0 +1,35 @@
+.user-card {
+  width: 65%;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+  text-align: center; /* Center align all text */
+}
+
+.user-card:hover {
+  transform: scale(1.02);
+}
+
+.user-header {
+  margin-bottom: 10px;
+}
+
+.user-header h2 {
+  margin: 0;
+  font-size: 28px; /* Slightly larger font for the username */
+  color: #2196F3;
+}
+
+.user-header p {
+  margin: 5px 0;
+  color: #777;
+}
+
+.user-details p {
+  margin: 5px 0;
+  color: #333;
+}

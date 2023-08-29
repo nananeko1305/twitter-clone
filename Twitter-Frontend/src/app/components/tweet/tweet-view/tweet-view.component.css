@@ -5,7 +5,7 @@
   margin-left: auto;
   margin-right: auto;
 }
-  
+
 .tweet-user-username {
   font-size: 22px;
   margin-bottom: 20px;
@@ -25,7 +25,7 @@
 .tweet-image {
   cursor: pointer;
 }
-  
+
 .favorite-icon {
   transform: scale(1.5);
 }
@@ -39,7 +39,7 @@
 .total-likes {
   margin-left: 10px;
 }
-  
+
 .who-liked {
   font-size: 15px;
   margin-left: 10px;
@@ -63,4 +63,9 @@
 .report-title {
   text-align: center;
   margin-top: 15px;
+}
+
+.hashtag {
+  color: #64a4ff; /* Or your desired color */
+  font-weight: bold;
 }

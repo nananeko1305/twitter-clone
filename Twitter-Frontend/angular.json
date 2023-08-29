@@ -19,13 +19,20 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "assets": [
-              "src/assets"
+              "src/assets",
+              "src/firebase-messaging-sw.js"
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+              "node_modules/bootstrap/scss/bootstrap.scss",
+              "node_modules/bootstrap-icons/font/bootstrap-icons.css",
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -64,7 +71,7 @@
           "options": {
             "sslKey": "../Twitter-Backend/api_gateway/cert/twitter.key",
             "sslCert": "../Twitter-Backend/api_gateway/cert/twitter.crt",
-            "ssl": true
+            "ssl": false
           },
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {

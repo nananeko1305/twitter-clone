@@ -2,6 +2,8 @@ package startup
 
 import (
 	"context"
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
@@ -17,6 +19,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
+	"google.golang.org/api/option"
 	"log"
 	"net/http"
 	"os"
@@ -67,6 +70,13 @@ func (server *Server) Start() {
 	//connect to nats client
 	natsConnection := configs.ConnectToNats(cfg)
 
+	//init firebase client
+	firebaseClient, err := server.initFirebaseCloudMessaging()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	ctx := context.Background()
 	exp, err := newExporter(cfg.JaegerAddress)
 	if err != nil {
@@ -94,7 +104,7 @@ func (server *Server) Start() {
 		return
 	}
 
-	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection, elasticStore)
+	tweetService := server.initTweetService(*tweetStore, tweetCache, tracer, natsConnection, elasticStore, firebaseClient)
 	tweetService.SubscribeToNats(natsConnection)
 	err = elasticStore.CheckIndex()
 	if err != nil {
@@ -106,8 +116,8 @@ func (server *Server) Start() {
 	server.start(tweetHandler)
 }
 
-func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats2.Conn, elasticService domain.TweetElasticStore) *application.TweetService {
-	service := application.NewTweetService(&store, cache, tracer, natsConnection, elasticService)
+func (server *Server) initTweetService(store store.TweetRepo, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats2.Conn, elasticService domain.TweetElasticStore, firebaseClient *messaging.Client) *application.TweetService {
+	service := application.NewTweetService(&store, cache, tracer, natsConnection, elasticService, firebaseClient)
 	return service
 }
 
@@ -210,4 +220,19 @@ func newTraceProvider(exp sdktrace.SpanExporter) *sdktrace.TracerProvider {
 		sdktrace.WithBatcher(exp),
 		sdktrace.WithResource(r),
 	)
+}
+
+func (server *Server) initFirebaseCloudMessaging() (*messaging.Client, error) {
+	opt := option.WithCredentialsFile("firebase_key.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing app: %v", err)
+	}
+
+	client, err := app.Messaging(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("error initializing messaging client: %v", err)
+	}
+
+	return client, nil
 }

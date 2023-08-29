@@ -24,7 +24,7 @@ export class HeaderComponent implements OnInit{
   }
 
   logout() {
-    localStorage.clear();
+    localStorage.removeItem("authToken");
     this.router.navigate(['/Login']).then();
   }
 

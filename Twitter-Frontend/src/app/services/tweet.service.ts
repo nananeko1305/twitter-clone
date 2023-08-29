@@ -7,6 +7,7 @@ import { TimespentDTO } from "../dto/TimespentDTO";
 import { TweetID } from "../dto/tweetIdDTO";
 import { Favorite } from "../models/favorite.model";
 import { Tweet } from "../models/tweet.model";
+import {Search} from "../models/search";
 
 @Injectable({
     providedIn: 'root'
@@ -45,7 +46,7 @@ import { Tweet } from "../models/tweet.model";
     public GetLikesByTweet(tweetID: string): Observable<Favorite[]> {
         return this.http.get<Favorite[]>(`${environment.baseApiUrl}/${this.url}/whoLiked/` + tweetID)
     }
-    
+
     public GetImageByTweet(tweetID: string): Observable<Blob> {
         return this.http.get(`${environment.baseApiUrl}/${this.url}/image/${tweetID}`, { responseType: 'blob' })
     }
@@ -57,5 +58,9 @@ import { Tweet } from "../models/tweet.model";
     public ViewedProfileFromAd(tweetID: TweetID): Observable<void> {
         return this.http.post<void>(`${environment.baseApiUrl}/${this.url}/viewCount`, tweetID)
     }
+
+  public SearchTweets(search: Search): Observable<Tweet[]> {
+    return this.http.post<Tweet[]>(`${environment.baseApiUrl}/${this.url}/search`, search)
+  }
 
 }

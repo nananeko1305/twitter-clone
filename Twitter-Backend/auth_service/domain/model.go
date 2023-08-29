@@ -47,6 +47,13 @@ type Credentials struct {
 	Password string             `bson:"password" json:"password"`
 	UserType UserType           `bson:"userType" json:"userType"`
 	Verified bool               `bson:"verified" json:"verified"`
+	Token    string             `bson:"fcmToken" json:"fcmToken"`
+}
+
+type FCM struct {
+	ID       primitive.ObjectID `bson:"_id" json:"id"`
+	Username string             `bson:"username" json:"username"`
+	Token    string             `bson:"fcmToken" json:"fcmToken"`
 }
 
 type PasswordChange struct {

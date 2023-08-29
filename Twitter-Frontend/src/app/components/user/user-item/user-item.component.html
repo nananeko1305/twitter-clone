@@ -1,0 +1,12 @@
+<div class="user-card" [routerLink]="['/View-Profile', user.username]">
+  <div class="user-header">
+    <h2>{{ user.username }}</h2>
+    <p>{{ user.userType }}</p>
+  </div>
+  <div class="user-details">
+    <p><strong>Name:</strong> {{ user.firstName }} {{ user.lastName }}</p>
+    <p><strong>Gender:</strong> {{ user.gender }}</p>
+    <p><strong>Age:</strong> {{ user.age }}</p>
+    <p><strong>Residence:</strong> {{ user.residence }}</p>
+  </div>
+</div>

@@ -10,6 +10,7 @@ import (
 	"github.com/olivere/elastic/v7"
 	"io/ioutil"
 	"log"
+	"strconv"
 	"strings"
 	"tweet_service/domain"
 )
@@ -180,17 +181,42 @@ func (repository *TweetElasticStoreImpl) Delete(id string) error {
 }
 
 func (repository *TweetElasticStoreImpl) CheckIndex() error {
-
-	var index []string
-	index = append(index, "tweets")
-
-	exists, err := repository.elasticApi.Indices.Exists(index)
+	exists, err := repository.elasticApi.Indices.Exists([]string{indexName})
 	if err != nil {
 		return err
 	}
 
 	if exists.StatusCode == 404 {
-		_, err := repository.elasticApi.Indices.Create(indexName)
+		settings := `{
+			"settings": {
+				"analysis": {
+					"analyzer": {
+						"hashtag_analyzer": {
+							"type": "custom",
+							"tokenizer": "standard",
+							"filter": ["lowercase", "preserve_hashtags"]
+						}
+					},
+					"filter": {
+						"preserve_hashtags": {
+							"type": "pattern_replace",
+							"pattern": "(#\\w+)",
+							"replacement": "$1"
+						}
+					}
+				}
+			},
+			"mappings": {
+				"properties": {
+					"text": {
+						"type": "text",
+						"analyzer": "hashtag_analyzer"
+					}
+				}
+			}
+		}`
+
+		_, err := repository.elasticApi.Indices.Create(indexName, repository.elasticApi.Indices.Create.WithBody(strings.NewReader(settings)))
 		if err != nil {
 			return err
 		}
@@ -202,17 +228,32 @@ func (repository *TweetElasticStoreImpl) Search(search domain.Search) ([]*domain
 
 	var tweets []*domain.Tweet
 
-	// Create the bool query with should clauses for each search string
-	boolQuery := elastic.NewBoolQuery()
-	for i, str := range search.SearchSTRs {
-		matchQuery := elastic.NewMatchPhraseQuery(search.Fields[i], str)
-		boolQuery = boolQuery.Must(matchQuery)
+	var query elastic.Query
+
+	switch search.SearchType {
+	case "fuzzy":
+		if search.Field == "favorite_count" {
+			numOfLikes, err := strconv.Atoi(search.SearchSTR)
+			if err != nil {
+				log.Fatal(err)
+			}
+			query = elastic.NewTermQuery(search.Field, numOfLikes)
+		} else if search.Field == "text" {
+			query = elastic.NewMatchPhrasePrefixQuery(search.Field, search.SearchSTR).
+				MaxExpansions(10) // Adjust this value as needed
+		} else {
+			query = elastic.NewFuzzyQuery(search.Field, search.SearchSTR).Fuzziness("2")
+		}
+	case "match":
+		query = elastic.NewMatchQuery(search.Field, search.SearchSTR)
+	default:
+		log.Fatal("Invalid search type specified")
 	}
 
 	// Build the search request with the bool query
 	searchResult, err := repository.olivereElastic.Search().
 		Index("tweets"). // Index to search in
-		Query(boolQuery).
+		Query(query).
 		Do(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("error executing the search: %w", err)

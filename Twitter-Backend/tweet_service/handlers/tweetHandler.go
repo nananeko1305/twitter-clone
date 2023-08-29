@@ -164,7 +164,7 @@ func (handler *TweetHandler) Favorite(writer http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	tweets, err := handler.service.Favorite(ctx, tweet.ID.String(), username, tweet.Advertisement)
+	status, err := handler.service.Favorite(ctx, tweet.ID.String(), username, tweet.Advertisement)
 
 	if err != nil {
 		log.Printf("Error in tweetHandler Favorite(): %s", err.Error())
@@ -173,7 +173,7 @@ func (handler *TweetHandler) Favorite(writer http.ResponseWriter, req *http.Requ
 	}
 
 	writer.WriteHeader(http.StatusOK)
-	jsonResponse(tweets, writer)
+	jsonResponse(status, writer)
 
 }
 
@@ -359,6 +359,8 @@ func (handler *TweetHandler) Search(writer http.ResponseWriter, req *http.Reques
 		writer.Write([]byte(err.Error()))
 		return
 	}
+
+	log.Println(search)
 
 	tweets, err := handler.service.Search(search)
 	if err != nil {

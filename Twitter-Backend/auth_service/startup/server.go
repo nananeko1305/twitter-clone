@@ -2,17 +2,22 @@ package startup
 
 import (
 	"auth_service/application"
+	"auth_service/configs"
 	"auth_service/domain"
 	"auth_service/handlers"
 	"auth_service/startup/config"
 	store2 "auth_service/store"
 	"context"
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
+	nats2 "github.com/nats-io/nats.go"
 	saga "github.com/zjalicf/twitter-clone-common/common/saga/messaging"
 	"github.com/zjalicf/twitter-clone-common/common/saga/messaging/nats"
 	"go.mongodb.org/mongo-driver/mongo"
+	"google.golang.org/api/option"
 	"log"
 	"net/http"
 	"os"
@@ -37,6 +42,12 @@ func NewServer(config *config.Config) *Server {
 
 func (server *Server) Start() {
 
+	firebaseClient, err := server.initFirebaseCloudMessaging()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	mongoClient := server.initMongoClient()
 	defer func(mongoClient *mongo.Client, ctx context.Context) {
 		err := mongoClient.Disconnect(ctx)
@@ -44,6 +55,8 @@ func (server *Server) Start() {
 			log.Println(err)
 		}
 	}(mongoClient, context.Background())
+
+	natsConnection := configs.ConnectToNats(server.config)
 
 	redisClient := server.initRedisClient()
 	authCache := server.initAuthCache(redisClient)
@@ -61,8 +74,8 @@ func (server *Server) Start() {
 
 	createUserOrchestrator := server.initCreateUserOrchestrator(commandPublisher, replySubscriber)
 
-	authService := server.initAuthService(authStore, authCache, createUserOrchestrator)
-
+	authService := server.initAuthService(authStore, authCache, createUserOrchestrator, firebaseClient, natsConnection)
+	authService.SubscribeToNats(natsConnection)
 	server.initCreateUserHandler(authService, replyPublisher, commandSubscriber)
 	authHandler := server.initAuthHandler(authService)
 
@@ -95,8 +108,8 @@ func (server *Server) initAuthCache(client *redis.Client) domain.AuthCache {
 	return cache
 }
 
-func (server *Server) initAuthService(store domain.AuthStore, cache domain.AuthCache, orchestrator *application.CreateUserOrchestrator) *application.AuthService {
-	return application.NewAuthService(store, cache, orchestrator)
+func (server *Server) initAuthService(store domain.AuthStore, cache domain.AuthCache, orchestrator *application.CreateUserOrchestrator, firebaseClient *messaging.Client, natsConnection *nats2.Conn) *application.AuthService {
+	return application.NewAuthService(store, cache, orchestrator, firebaseClient, natsConnection)
 }
 
 func (server *Server) initAuthHandler(service *application.AuthService) *handlers.AuthHandler {
@@ -138,6 +151,21 @@ func (server *Server) initCreateUserHandler(service *application.AuthService, pu
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (server *Server) initFirebaseCloudMessaging() (*messaging.Client, error) {
+	opt := option.WithCredentialsFile("firebase_key.json")
+	app, err := firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing app: %v", err)
+	}
+
+	client, err := app.Messaging(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("error initializing messaging client: %v", err)
+	}
+
+	return client, nil
 }
 
 // start

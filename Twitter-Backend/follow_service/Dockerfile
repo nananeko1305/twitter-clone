@@ -10,5 +10,6 @@ WORKDIR /root/
 COPY --from=builder /app/main .
 COPY /rbac/auth_model.conf/ .
 COPY /follow_service/policy.csv .
+COPY /follow_service/firebase_key.json .
 EXPOSE 8000
 CMD ["./main"]

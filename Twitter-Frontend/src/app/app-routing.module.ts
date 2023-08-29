@@ -18,6 +18,8 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
 import { FollowRequestsComponent } from './components/my-follow-requests/follow-requests.component';
 import { TweetViewComponent } from './components/tweet/tweet-view/tweet-view.component';
 import {ReportListComponent} from "./components/report/report-list/report-list.component";
+import {SearchPeopleComponent} from "./components/search-people/search-people.component";
+import {SearchTweetsComponent} from "./components/search-tweets/search-tweets.component";
 
 const routes: Routes = [
   {
@@ -90,6 +92,16 @@ const routes: Routes = [
   {
     path: 'Reports',
     component: ReportListComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'Search-People',
+    component: SearchPeopleComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'Search-Tweets',
+    component: SearchTweetsComponent,
     canActivate: [AuthGuard]
   },
   // {

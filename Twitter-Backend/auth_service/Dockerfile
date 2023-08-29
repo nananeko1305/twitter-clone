@@ -11,5 +11,6 @@ COPY --from=builder /app/main .
 COPY /rbac/auth_model.conf/ .
 COPY /auth_service/policy.csv .
 COPY /auth_service/blacklist.txt .
+COPY /auth_service/firebase_key.json .
 EXPOSE 8000
 CMD ["./main"]

@@ -2,23 +2,33 @@ package application
 
 import (
 	"context"
+	"encoding/json"
+	"firebase.google.com/go/messaging"
 	"fmt"
 	"follow_service/domain"
 	"follow_service/errors"
 	"github.com/google/uuid"
+	"github.com/nats-io/nats.go"
 	"github.com/zjalicf/twitter-clone-common/common/saga/create_user"
 	"go.opentelemetry.io/otel/trace"
+	"log"
+	"os"
+	"time"
 )
 
 type FollowService struct {
-	store  domain.FollowRequestStore
-	tracer trace.Tracer
+	store          domain.FollowRequestStore
+	tracer         trace.Tracer
+	nastConnection *nats.Conn
+	messaging      *messaging.Client
 }
 
-func NewFollowService(store domain.FollowRequestStore, tracer trace.Tracer) *FollowService {
+func NewFollowService(store domain.FollowRequestStore, tracer trace.Tracer, natsConnection *nats.Conn, messaging *messaging.Client) *FollowService {
 	return &FollowService{
-		store:  store,
-		tracer: tracer,
+		store:          store,
+		tracer:         tracer,
+		nastConnection: natsConnection,
+		messaging:      messaging,
 	}
 }
 
@@ -125,6 +135,27 @@ func (service *FollowService) CreateRequest(ctx context.Context, request *domain
 			return err
 		}
 	}
+
+	dataToSend, err := json.Marshal(username)
+	if err != nil {
+		log.Println("Error in marshaling json to send with NATS: ", err)
+		return err
+	}
+
+	response, err := service.nastConnection.Request(os.Getenv("GET_FCM_TOKEN"), dataToSend, 5*time.Second)
+	if err != nil {
+		log.Println("Error with send request", err)
+		return err
+	}
+
+	var fcmToken string
+	err = json.Unmarshal(response.Data, &fcmToken)
+	if err != nil {
+		log.Println("Error in unmarshal json")
+		return err
+	}
+
+	service.sendNotificationToDevice(fcmToken, username)
 
 	return nil
 }
@@ -234,4 +265,23 @@ func (service *FollowService) UserToDomain(userIn create_user.User) domain.User 
 	}
 
 	return user
+}
+
+func (service *FollowService) sendNotificationToDevice(token string, username string) error {
+
+	message := &messaging.Message{
+		Token: token,
+		Notification: &messaging.Notification{
+			Title: "TITLE",
+			Body:  "" + username + " send you follow request!",
+		},
+	}
+
+	_, err := service.messaging.Send(context.Background(), message)
+	if err != nil {
+		return fmt.Errorf("error sending message: %v", err)
+	}
+	log.Println("Message sent")
+
+	return nil
 }

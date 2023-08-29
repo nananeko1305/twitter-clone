@@ -7,9 +7,11 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"firebase.google.com/go/messaging"
 	"fmt"
 	"github.com/cristalhq/jwt/v4"
 	"github.com/google/uuid"
+	"github.com/nats-io/nats.go"
 	"github.com/zjalicf/twitter-clone-common/common/saga/create_user"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -32,16 +34,20 @@ var (
 )
 
 type AuthService struct {
-	store        domain.AuthStore
-	cache        domain.AuthCache
-	orchestrator *CreateUserOrchestrator
+	store          domain.AuthStore
+	cache          domain.AuthCache
+	orchestrator   *CreateUserOrchestrator
+	firebaseClient *messaging.Client
+	nastConnection *nats.Conn
 }
 
-func NewAuthService(store domain.AuthStore, cache domain.AuthCache, orchestrator *CreateUserOrchestrator) *AuthService {
+func NewAuthService(store domain.AuthStore, cache domain.AuthCache, orchestrator *CreateUserOrchestrator, firebaseClient *messaging.Client, natsConnection *nats.Conn) *AuthService {
 	return &AuthService{
-		store:        store,
-		cache:        cache,
-		orchestrator: orchestrator,
+		store:          store,
+		cache:          cache,
+		orchestrator:   orchestrator,
+		firebaseClient: firebaseClient,
+		nastConnection: natsConnection,
 	}
 }
 
@@ -310,6 +316,9 @@ func (service *AuthService) Login(ctx context.Context, credentials *domain.Crede
 		return "", err
 	}
 
+	// Set same _id for credentials
+	credentials.ID = user.ID
+
 	if !user.Verified {
 		userServiceEndpoint := fmt.Sprintf("http://%s:%s/%s", userServiceHost, userServicePort, user.ID.Hex())
 		userServiceRequest, _ := http.NewRequest("GET", userServiceEndpoint, nil)
@@ -349,6 +358,10 @@ func (service *AuthService) Login(ctx context.Context, credentials *domain.Crede
 		return "", err
 	}
 
+	err = service.CreateToken(credentials)
+	if err != nil {
+		return "", err
+	}
 	return tokenString, nil
 }
 
@@ -555,4 +568,66 @@ func checkBlackList(username string) (bool, error) {
 	} else {
 		return false, nil
 	}
+}
+
+// Subscribe to NATS
+
+func (service *AuthService) SubscribeToNats(natsConnection *nats.Conn) {
+
+	_, err := natsConnection.QueueSubscribe(os.Getenv("GET_FCM_TOKEN"), "queue-fcm-group", func(msg *nats.Msg) {
+
+		var username string
+		err := json.Unmarshal(msg.Data, &username)
+		if err != nil {
+			log.Println("Error in unmarshal JSON!")
+			return
+		}
+
+		fcmToken, err := service.GetTokenForUser(username)
+		if err != nil {
+			return
+		}
+
+		dataToSend, err := json.Marshal(&fcmToken.Token)
+		if err != nil {
+			log.Println("Error in marshaling json")
+			return
+		}
+
+		err = natsConnection.Publish(msg.Reply, dataToSend)
+		if err != nil {
+			log.Printf("Error in publish response: %s", err.Error())
+			return
+		}
+
+	})
+	if err != nil {
+		log.Printf("Error in receiving message: %s", err.Error())
+		return
+	}
+}
+
+// Methods for fcm tokens collection
+
+func (service *AuthService) CreateToken(credentials *domain.Credentials) error {
+
+	fcm := domain.FCM{
+		ID:       credentials.ID,
+		Username: credentials.Username,
+		Token:    credentials.Token,
+	}
+	err := service.store.CreateToken(&fcm)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (service *AuthService) GetTokenForUser(username string) (*domain.FCM, error) {
+
+	fcmToken, err := service.store.GetTokenForUser(username)
+	if err != nil {
+		return nil, err
+	}
+	return fcmToken, nil
 }

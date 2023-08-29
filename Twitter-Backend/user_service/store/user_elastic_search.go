@@ -77,22 +77,20 @@ func (store UserElasticStoreImpl) Search(search domain.Search) ([]*domain.User, 
 	// Initialize the slice to store the search results
 	var users []*domain.User
 
-	// Create a bool query to combine multiple field-based match queries
-	boolQuery := elastic.NewBoolQuery()
+	var query elastic.Query
 
-	// Loop through each search string and field, and create a match query for each with fuzziness
-	for i, searchStr := range search.SearchSTRs {
-		if i < len(search.Fields) {
-			matchQuery := elastic.NewMatchQuery(search.Fields[i], searchStr).
-				Fuzziness("2") // Set fuzziness to 2 characters
-			boolQuery = boolQuery.Must(matchQuery)
-		}
+	if search.SearchType == "fuzzy" {
+		query = elastic.NewFuzzyQuery(search.Field, search.SearchSTR).Fuzziness("2")
+	} else if search.SearchType == "match" {
+		query = elastic.NewMatchQuery(search.Field, search.SearchSTR)
+	} else {
+		log.Fatal("Invalid search type specified")
 	}
 
 	// Build the search request with the bool query
 	searchResult, err := store.olivereElastic.Search().
 		Index(indexName).
-		Query(boolQuery).
+		Query(query).
 		Do(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("error executing the search: %w", err)

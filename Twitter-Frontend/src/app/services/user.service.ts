@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { User } from '../models/user.model';
+import {Search} from "../models/search";
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +29,10 @@ export class UserService {
 
   public ChangeVisibility(): Observable<any> {
     return this.http.put<any>(`${environment.baseApiUrl}/${this.url}/visibility`, null)
+  }
+
+  public Search(search: Search): Observable<User[]> {
+    return this.http.post<User[]>(`${environment.baseApiUrl}/${this.url}/search`, search)
   }
 
 }

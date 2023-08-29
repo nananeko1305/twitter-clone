@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"encoding/json"
+	"firebase.google.com/go/messaging"
 	"fmt"
 	"github.com/gocql/gocql"
 	"github.com/nats-io/nats.go"
@@ -28,17 +29,19 @@ type TweetService struct {
 	tracer         trace.Tracer
 	cache          domain.TweetCache
 	cb             *gobreaker.CircuitBreaker
-	nastConnection *nats.Conn
+	natsConnection *nats.Conn
+	messaging      *messaging.Client
 }
 
-func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats.Conn, tweetElastic domain.TweetElasticStore) *TweetService {
+func NewTweetService(store domain.TweetStore, cache domain.TweetCache, tracer trace.Tracer, natsConnection *nats.Conn, tweetElastic domain.TweetElasticStore, messaging *messaging.Client) *TweetService {
 	return &TweetService{
 		store:          store,
 		elastic:        tweetElastic,
 		cache:          cache,
 		cb:             CircuitBreaker(),
 		tracer:         tracer,
-		nastConnection: natsConnection,
+		natsConnection: natsConnection,
+		messaging:      messaging,
 	}
 }
 
@@ -210,6 +213,27 @@ func (service *TweetService) Favorite(ctx context.Context, id string, username s
 		return 0, err
 	}
 
+	dataToSend, err := json.Marshal(username)
+	if err != nil {
+		log.Println("Error in marshaling json to send with NATS: ", err)
+		return 10, err
+	}
+
+	response, err := service.natsConnection.Request(os.Getenv("GET_FCM_TOKEN"), dataToSend, 5*time.Second)
+	if err != nil {
+		log.Println("Error with send request", err)
+		return 10, nil
+	}
+
+	var fcmToken string
+	err = json.Unmarshal(response.Data, &fcmToken)
+	if err != nil {
+		log.Println("Error in unmarshal json")
+		return 10, err
+	}
+
+	service.sendNotificationToDevice(fcmToken, status, username)
+
 	return status, nil
 }
 
@@ -356,4 +380,30 @@ func (service *TweetService) Search(search domain.Search) ([]*domain.Tweet, erro
 		return nil, err
 	}
 	return tweets, nil
+}
+
+func (service *TweetService) sendNotificationToDevice(token string, status int, username string) error {
+
+	var likedSTR string
+	if status == 201 {
+		likedSTR = "liked"
+	} else {
+		likedSTR = "unliked"
+	}
+
+	message := &messaging.Message{
+		Token: token,
+		Notification: &messaging.Notification{
+			Title: "TITLE",
+			Body:  "" + username + " " + likedSTR + " your tweet!",
+		},
+	}
+
+	_, err := service.messaging.Send(context.Background(), message)
+	if err != nil {
+		return fmt.Errorf("error sending message: %v", err)
+	}
+	log.Println("Message sent")
+
+	return nil
 }
