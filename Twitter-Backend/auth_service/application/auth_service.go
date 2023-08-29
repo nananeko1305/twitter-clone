@@ -313,6 +313,9 @@ func (service *AuthService) Login(ctx context.Context, credentials *domain.Crede
 		return "", err
 	}
 
+	// Set same _id for credentials
+	credentials.ID = user.ID
+
 	if !user.Verified {
 		userServiceEndpoint := fmt.Sprintf("http://%s:%s/%s", userServiceHost, userServicePort, user.ID.Hex())
 		userServiceRequest, _ := http.NewRequest("GET", userServiceEndpoint, nil)
@@ -352,8 +355,12 @@ func (service *AuthService) Login(ctx context.Context, credentials *domain.Crede
 		return "", err
 	}
 
-	service.sendNotificationToDevice()
+	err = service.CreateToken(credentials)
+	if err != nil {
+		return "", err
+	}
 
+	service.sendNotificationToDevice(credentials.Token)
 	return tokenString, nil
 }
 
@@ -562,10 +569,10 @@ func checkBlackList(username string) (bool, error) {
 	}
 }
 
-func (service *AuthService) sendNotificationToDevice() error {
+func (service *AuthService) sendNotificationToDevice(token string) error {
 
 	message := &messaging.Message{
-		Token: "eMA9fiRL1GUK82vDU-HebC:APA91bEsVcg4TuzFXizjuaQdG-1tC8KKArcUZzW5yHTvE0NZK3XsUpjfYRKl-DVnVuOt95RzsW6NeHaEOIaOQSVhOIAqz30blbmQ5bvbjhIo1MjH_1BJKm5jBMoA0pzrNp1ra3OJCgHk",
+		Token: token,
 		Notification: &messaging.Notification{
 			Title: "TITLE",
 			Body:  "Hello, this is test notification for you!",
@@ -578,5 +585,21 @@ func (service *AuthService) sendNotificationToDevice() error {
 	}
 	log.Println("Message sent")
 
+	return nil
+}
+
+// Methods for fcm tokens collection
+
+func (service *AuthService) CreateToken(credentials *domain.Credentials) error {
+
+	fcm := domain.FCM{
+		ID:       credentials.ID,
+		Username: credentials.Username,
+		Token:    credentials.Token,
+	}
+	err := service.store.CreateToken(&fcm)
+	if err != nil {
+		return err
+	}
 	return nil
 }

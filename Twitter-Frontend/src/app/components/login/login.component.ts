@@ -53,8 +53,10 @@ export class LoginComponent implements OnInit {
 
     login.username = this.formGroup.get('username')?.value;
     login.password = this.formGroup.get('password')?.value;
-
-    //generating FMC token for current device
+    const token = localStorage.getItem("fcmToken")
+    if(token != null){
+      login.fcmToken = token
+    }
 
     this.authService.Login(login)
       .subscribe({

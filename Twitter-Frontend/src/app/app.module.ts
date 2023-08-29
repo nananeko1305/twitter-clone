@@ -53,7 +53,7 @@ import { UserItemComponent } from './components/user/user-item/user-item.compone
 import { UserListComponent } from './components/user/user-list/user-list.component';
 import {AngularFireModule} from "@angular/fire/compat";
 import {environment} from "../environments/environment";
-import {AngularFireMessaging} from "@angular/fire/compat/messaging";
+import {AngularFireMessagingModule} from "@angular/fire/compat/messaging";
 
 
 @NgModule({
@@ -113,6 +113,7 @@ import {AngularFireMessaging} from "@angular/fire/compat/messaging";
     MatDatepickerModule,
     MatNativeDateModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFireMessagingModule
   ],
   providers: [{
     provide: HTTP_INTERCEPTORS,

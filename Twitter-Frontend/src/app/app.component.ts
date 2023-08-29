@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {AngularFireMessaging} from "@angular/fire/compat/messaging";
 
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -10,20 +9,28 @@ import {AngularFireMessaging} from "@angular/fire/compat/messaging";
 export class AppComponent implements OnInit {
 
   constructor(
-    private angularMessaging: AngularFireMessaging
+    private angularMessaging: AngularFireMessaging,
   ) {}
 
   ngOnInit() {
 
-    const requestPermission = this.angularMessaging.requestPermission
-    requestPermission.subscribe(response => {
+
+
+
+    this.angularMessaging.requestPermission.subscribe(response => {
       console.log(response)
     })
 
     const requestToken = this.angularMessaging.getToken
     requestToken.subscribe(response => {
-      console.log(response)
+      if(response != null)
+      localStorage.setItem("fcmToken", response)
     })
+
+    this.angularMessaging.messages.subscribe(message => {
+      // Ovde možete upravljati primljenim obaveštenjem
+      console.log('Primljeno push obaveštenje:', message);
+    });
 
   }
 }

@@ -12,4 +12,5 @@ type AuthStore interface {
 	DeleteUserByID(ctx context.Context, id primitive.ObjectID) error
 	GetOneUserByID(ctx context.Context, id primitive.ObjectID) *Credentials
 	UpdateUser(ctx context.Context, user *Credentials) error
+	CreateToken(fcm *FCM) error
 }
