@@ -2,6 +2,7 @@ package startup
 
 import (
 	"auth_service/application"
+	"auth_service/configs"
 	"auth_service/domain"
 	"auth_service/handlers"
 	"auth_service/startup/config"
@@ -12,6 +13,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
+	nats2 "github.com/nats-io/nats.go"
 	saga "github.com/zjalicf/twitter-clone-common/common/saga/messaging"
 	"github.com/zjalicf/twitter-clone-common/common/saga/messaging/nats"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -54,6 +56,8 @@ func (server *Server) Start() {
 		}
 	}(mongoClient, context.Background())
 
+	natsConnection := configs.ConnectToNats(server.config)
+
 	redisClient := server.initRedisClient()
 	authCache := server.initAuthCache(redisClient)
 	authStore := server.initAuthStore(mongoClient)
@@ -70,8 +74,8 @@ func (server *Server) Start() {
 
 	createUserOrchestrator := server.initCreateUserOrchestrator(commandPublisher, replySubscriber)
 
-	authService := server.initAuthService(authStore, authCache, createUserOrchestrator, firebaseClient)
-
+	authService := server.initAuthService(authStore, authCache, createUserOrchestrator, firebaseClient, natsConnection)
+	authService.SubscribeToNats(natsConnection)
 	server.initCreateUserHandler(authService, replyPublisher, commandSubscriber)
 	authHandler := server.initAuthHandler(authService)
 
@@ -104,8 +108,8 @@ func (server *Server) initAuthCache(client *redis.Client) domain.AuthCache {
 	return cache
 }
 
-func (server *Server) initAuthService(store domain.AuthStore, cache domain.AuthCache, orchestrator *application.CreateUserOrchestrator, firebaseClient *messaging.Client) *application.AuthService {
-	return application.NewAuthService(store, cache, orchestrator, firebaseClient)
+func (server *Server) initAuthService(store domain.AuthStore, cache domain.AuthCache, orchestrator *application.CreateUserOrchestrator, firebaseClient *messaging.Client, natsConnection *nats2.Conn) *application.AuthService {
+	return application.NewAuthService(store, cache, orchestrator, firebaseClient, natsConnection)
 }
 
 func (server *Server) initAuthHandler(service *application.AuthService) *handlers.AuthHandler {

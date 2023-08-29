@@ -15,6 +15,8 @@ type Config struct {
 	CreateUserCommandSubject string
 	CreateUserReplySubject   string
 	JaegerAddress            string
+	NatsURI                  string
+	GetFCMToken              string
 }
 
 func NewConfig() *Config {
@@ -31,5 +33,7 @@ func NewConfig() *Config {
 		CreateUserCommandSubject: os.Getenv("CREATE_USER_COMMAND_SUBJECT"),
 		CreateUserReplySubject:   os.Getenv("CREATE_USER_REPLY_SUBJECT"),
 		JaegerAddress:            os.Getenv("JAEGER_ADDRESS"),
+		NatsURI:                  os.Getenv("NATS_URI"),
+		GetFCMToken:              os.Getenv("GET_FCM_TOKEN"),
 	}
 }

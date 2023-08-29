@@ -166,3 +166,14 @@ func (store *AuthMongoDBStore) filterOneFCM(filter interface{}) (user *domain.FC
 	err = result.Decode(&user)
 	return
 }
+
+func (store *AuthMongoDBStore) GetTokenForUser(username string) (fcmToken *domain.FCM, err error) {
+
+	filter := bson.M{"username": username}
+	result := store.fcm.FindOne(context.Background(), filter)
+	err = result.Decode(&fcmToken)
+	if err != nil {
+		return nil, err
+	}
+	return fcmToken, nil
+}

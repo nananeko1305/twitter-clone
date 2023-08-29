@@ -30,9 +30,6 @@ export class AppComponent implements OnInit {
 
     this.angularMessaging.messages.subscribe(message => {
 
-      console.log(message)
-      console.log(this.swPush.isEnabled)
-
       if (!this.swPush.isEnabled) {
         Notification.requestPermission().then(permission => {
           if (permission === 'granted') {

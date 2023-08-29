@@ -29,6 +29,7 @@ services:
       NATS_URI: ${NATS_URI}
       DELETE_TWEET : ${DELETE_TWEET}
       ELASTICSEARCH_HOSTS: ${ELASTICSEARCH_HOSTS}
+      GET_FCM_TOKEN : ${GET_FCM_TOKEN}
     depends_on:
       jaeger:
         condition: service_started
@@ -100,6 +101,7 @@ services:
       CREATE_USER_COMMAND_SUBJECT: ${CREATE_USER_COMMAND_SUBJECT}
       CREATE_USER_REPLY_SUBJECT: ${CREATE_USER_REPLY_SUBJECT}
       DELETE_TWEET : ${DELETE_TWEET}
+      GET_FCM_TOKEN : ${GET_FCM_TOKEN}
     depends_on:
       - auth_db
       - auth_cache
