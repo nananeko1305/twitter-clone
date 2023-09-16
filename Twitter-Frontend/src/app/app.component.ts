@@ -16,8 +16,6 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
 
-
-
     this.angularMessaging.requestPermission.subscribe(response => {
       console.log(response)
     })
