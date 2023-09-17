@@ -14,10 +14,12 @@ import {StorageService} from "../../services/storage.service";
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
+
   formGroup: FormGroup = new FormGroup({
     username: new FormControl(''),
     password: new FormControl('')
   });
+  submitted = false;
 
   constructor(
     private authService: AuthService,
@@ -27,8 +29,6 @@ export class LoginComponent implements OnInit {
     private _snackBar: MatSnackBar,
     private storageService: StorageService,
   ) { }
-
-  submitted = false;
 
   ngOnInit(): void {
     this.formGroup = this.formBuilder.group({

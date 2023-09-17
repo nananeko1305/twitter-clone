@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+  import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { Tweet } from 'src/app/models/tweet.model';
@@ -28,7 +28,7 @@ export class MyProfileComponent implements OnInit {
   isBusinessBool: boolean = false
   followings: string[] = []
   followers: string[] = []
-    
+
   ngOnInit(): void {
 
 
@@ -50,7 +50,7 @@ export class MyProfileComponent implements OnInit {
                 if (data != null){
                   this.tweets = data;
                 }
-                
+
                 this.followService.GetFollowings("me").subscribe(
                   data => {
                     if (data != null) {

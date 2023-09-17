@@ -20,7 +20,7 @@ export class VerifyAccountComponent implements OnInit {
   });
   submitted = false;
   resend = false;
-  
+
   constructor(private authService: AuthService,
               private formBuilder: FormBuilder,
               private router: Router,
@@ -40,21 +40,19 @@ export class VerifyAccountComponent implements OnInit {
 
   onSubmit() {
     this.submitted = true;
-
-
     if (this.formGroup.invalid) {
       return;
     }
 
     let userToken = "";
-    
+
     this.verificationService.currentVerificationToken.subscribe(uToken => userToken = uToken);
 
     let mailToken: string = this.formGroup.get("verificationToken")?.value;
     let request = new VerificationRequest();
     request.user_token = userToken;
     request.mail_token = mailToken;
-    
+
     this.authService.VerifyAccount(request)
       .subscribe({
           next: (response: void) => {
@@ -63,7 +61,7 @@ export class VerifyAccountComponent implements OnInit {
           },
           error: (error: HttpErrorResponse) => {
             if (error.status == 406 || error.status == 400) {
-              this.formGroup.setErrors({invalidToken:true})                
+              this.formGroup.setErrors({invalidToken:true})
             }
             else if(error.status == 404){
               this.formGroup.setErrors({expiredToken:true})
