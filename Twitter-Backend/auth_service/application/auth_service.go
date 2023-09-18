@@ -79,8 +79,6 @@ func (service *AuthService) Register(ctx context.Context, user *domain.User) (st
 		return "", 406, fmt.Errorf(errors.EmailAlreadyExist)
 	}
 
-	//provereni su mejl i username
-
 	user.ID = primitive.NewObjectID()
 	validatedUser, err := validateUserType(user)
 	if err != nil {

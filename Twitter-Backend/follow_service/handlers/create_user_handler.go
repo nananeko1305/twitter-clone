@@ -31,7 +31,6 @@ func NewCreateUserCommandHandler(followService *application.FollowService, publi
 	return o, nil
 }
 
-// hendlovanje komandama
 func (handler *CreateUserCommandHandler) handle(command *events.CreateUserCommand) {
 
 	user := handler.followService.UserToDomain(command.User)

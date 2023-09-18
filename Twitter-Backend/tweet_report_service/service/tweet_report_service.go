@@ -132,9 +132,7 @@ func (service *TweetReportService) UpdateReportCount(report domain.TweetReport) 
 		}
 		return nil
 	}
-
-	//return to 2!!!!!!
-	if result.Count == 1 {
+	if result.Count == 2 {
 
 		dataToSend, err := json.Marshal(result.TweetID)
 		if err != nil {
